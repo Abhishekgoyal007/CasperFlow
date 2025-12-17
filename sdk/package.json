@@ -1,0 +1,42 @@
+{
+    "name": "@casperflow/sdk",
+    "version": "0.1.0",
+    "description": "TypeScript SDK for CasperFlow - On-chain subscription and metered billing protocol",
+    "main": "dist/index.js",
+    "module": "dist/index.esm.js",
+    "types": "dist/index.d.ts",
+    "license": "MIT",
+    "author": "CasperFlow Team",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Abhishekgoyal007/CasperFlow"
+    },
+    "keywords": [
+        "casper",
+        "blockchain",
+        "subscriptions",
+        "billing",
+        "web3",
+        "defi"
+    ],
+    "scripts": {
+        "build": "tsup src/index.ts --format cjs,esm --dts",
+        "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+        "test": "vitest",
+        "lint": "eslint src/",
+        "clean": "rm -rf dist"
+    },
+    "dependencies": {
+        "casper-js-sdk": "^2.15.0"
+    },
+    "devDependencies": {
+        "@types/node": "^20.0.0",
+        "tsup": "^8.0.0",
+        "typescript": "^5.0.0",
+        "vitest": "^1.0.0",
+        "eslint": "^8.0.0"
+    },
+    "peerDependencies": {
+        "casper-js-sdk": "^2.15.0"
+    }
+}

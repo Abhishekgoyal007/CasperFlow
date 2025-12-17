@@ -1,0 +1,29 @@
+[package]
+name = "casperflow-contracts"
+version = "0.1.0"
+edition = "2021"
+authors = ["CasperFlow Team"]
+description = "On-chain subscription and metered billing protocol for Casper"
+license = "MIT"
+
+[dependencies]
+odra = "1.1.0"
+
+[dev-dependencies]
+odra-test = "1.1.0"
+
+[features]
+default = []
+
+[[bin]]
+name = "casperflow_build"
+path = "bin/build.rs"
+test = false
+
+[workspace]
+members = [
+    "subscription_manager",
+    "usage_meter", 
+    "billing_engine",
+    "stake_to_pay"
+]
