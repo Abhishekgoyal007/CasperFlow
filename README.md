@@ -6,16 +6,6 @@ CasperFlow is the first protocol enabling usage-based billing, stake-powered pay
 
 ![CasperFlow Banner](./docs/banner.png)
 
-## 🏆 Built for Casper Hackathon 2026
-
-CasperFlow is competing across multiple tracks:
-
-| Track | Prize | Feature |
-|-------|-------|---------|
-| **Main Track** | $10,000 | Core billing protocol with SDK |
-| **Liquid Staking** | $2,500 | Stake-to-Pay: pay with staking rewards |
-| **Interoperability** | $2,500 | Cross-chain payments from Ethereum |
-
 ## ✨ Features
 
 ### 📦 Recurring Subscriptions
