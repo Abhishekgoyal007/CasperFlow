@@ -1,0 +1,24 @@
+# Odra Configuration for CasperFlow
+
+[project]
+name = "casperflow"
+authors = ["CasperFlow Team"]
+version = "0.1.0"
+
+[network.local]
+node_address = "http://localhost:11101"
+chain_name = "casper-net-1"
+
+[network.testnet]
+node_address = "http://136.243.187.84:7777/rpc"
+chain_name = "casper-test"
+
+[network.mainnet]
+node_address = "http://65.21.235.219:7777/rpc"
+chain_name = "casper"
+
+[contracts]
+subscription_manager = { path = "src/subscription_manager.rs" }
+usage_meter = { path = "src/usage_meter.rs" }
+billing_engine = { path = "src/billing_engine.rs" }
+stake_to_pay = { path = "src/stake_to_pay.rs" }
