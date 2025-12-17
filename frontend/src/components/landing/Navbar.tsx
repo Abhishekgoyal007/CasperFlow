@@ -31,8 +31,8 @@ export function Navbar() {
                 animate={{ y: 0 }}
                 transition={{ duration: 0.5, ease: "easeOut" }}
                 className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
-                        ? "bg-[#0a0a0f]/90 backdrop-blur-xl border-b border-white/5 shadow-lg"
-                        : "bg-transparent"
+                    ? "bg-[#0a0a0f]/90 backdrop-blur-xl border-b border-white/5 shadow-lg"
+                    : "bg-transparent"
                     }`}
             >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -67,14 +67,17 @@ export function Navbar() {
                         {/* CTA Buttons */}
                         <div className="hidden lg:flex items-center gap-4">
                             <Link
-                                href="/dashboard"
+                                href="/app"
                                 className="text-sm font-medium text-gray-400 hover:text-white transition-colors"
                             >
                                 Dashboard
                             </Link>
-                            <button className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-2.5 px-5 rounded-xl text-sm transition-all hover:scale-105">
+                            <Link
+                                href="/app"
+                                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-2.5 px-5 rounded-xl text-sm transition-all hover:scale-105"
+                            >
                                 Launch App
-                            </button>
+                            </Link>
                         </div>
 
                         {/* Mobile Menu Button */}
@@ -117,9 +120,12 @@ export function Navbar() {
                                     </Link>
                                 ))}
                                 <hr className="border-white/10 my-4" />
-                                <button className="bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold py-3 px-6 rounded-xl w-full">
+                                <Link
+                                    href="/app"
+                                    className="bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold py-3 px-6 rounded-xl w-full text-center block"
+                                >
                                     Launch App
-                                </button>
+                                </Link>
                             </div>
                         </motion.nav>
                     </motion.div>
