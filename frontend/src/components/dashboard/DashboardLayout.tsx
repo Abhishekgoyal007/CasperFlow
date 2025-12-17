@@ -17,6 +17,7 @@ import {
     Menu,
     X
 } from "lucide-react";
+import { ConnectWalletButton } from "@/components/wallet";
 
 const merchantNavItems = [
     { name: "Overview", href: "/app/merchant", icon: LayoutDashboard },
@@ -150,16 +151,9 @@ export function DashboardLayout({ children, type }: DashboardLayoutProps) {
                             <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
                         </button>
 
-                        {/* Profile */}
-                        <div className="flex items-center gap-3 pl-4 border-l border-white/10">
-                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-red-500 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
-                                AG
-                            </div>
-                            <div className="hidden sm:block">
-                                <div className="text-sm font-medium text-white">Abhishek</div>
-                                <div className="text-xs text-gray-500">0x1234...5678</div>
-                            </div>
-                            <ChevronDown className="w-4 h-4 text-gray-400" />
+                        {/* Wallet Connection */}
+                        <div className="pl-4 border-l border-white/10">
+                            <ConnectWalletButton />
                         </div>
                     </div>
                 </header>

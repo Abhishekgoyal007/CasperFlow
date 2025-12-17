@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Zap } from "lucide-react";
 import Link from "next/link";
+import { ConnectWalletButton } from "@/components/wallet";
 
 const navItems = [
     { name: "Features", href: "#features" },
@@ -72,12 +73,7 @@ export function Navbar() {
                             >
                                 Dashboard
                             </Link>
-                            <Link
-                                href="/app"
-                                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-2.5 px-5 rounded-xl text-sm transition-all hover:scale-105"
-                            >
-                                Launch App
-                            </Link>
+                            <ConnectWalletButton />
                         </div>
 
                         {/* Mobile Menu Button */}
