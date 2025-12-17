@@ -6,6 +6,11 @@ CasperFlow is the first protocol enabling usage-based billing, stake-powered pay
 
 ![CasperFlow Banner](./docs/banner.png)
 
+## 🔗 Links
+
+- **🌐 Live Demo**: [https://casper-flow-ly5p.vercel.app](https://casper-flow-ly5p.vercel.app)
+- **📦 GitHub**: [https://github.com/Abhishekgoyal007/CasperFlow](https://github.com/Abhishekgoyal007/CasperFlow)
+
 ## ✨ Features
 
 ### 📦 Recurring Subscriptions
@@ -215,6 +220,7 @@ PaymentBridge.payWithUsdc(casperInvoiceId, usdcAmount, expectedCsprAmount);
 - [x] Smart contract architecture
 - [x] TypeScript SDK
 - [x] Cross-chain bridge design
+- [x] Deploy frontend to Vercel
 - [ ] Deploy to Casper Testnet
 - [ ] Integration testing
 - [ ] Demo video
