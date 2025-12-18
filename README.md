@@ -1,259 +1,258 @@
-# CasperFlow 🌊
+# CasperFlow
 
-> **On-Chain Subscriptions & Metered Billing for Casper Blockchain**
+<div align="center">
 
-CasperFlow is the first protocol enabling usage-based billing, stake-powered payments, and cross-chain settlement on the Casper blockchain.
+![CasperFlow](https://img.shields.io/badge/CasperFlow-On--Chain%20Subscriptions-red?style=for-the-badge)
+![Casper](https://img.shields.io/badge/Casper-Blockchain-blue?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Testnet-green?style=for-the-badge)
 
-![CasperFlow Banner](./docs/banner.png)
+**The first protocol enabling usage-based billing and subscription management on the Casper blockchain.**
 
-## 🔗 Links
+[Live Demo](https://casperflow.vercel.app) · [Documentation](./docs/SDK.md) · [Contracts](./casperflow_contracts)
 
-- **🌐 Live Demo**: [https://casper-flow-ly5p.vercel.app](https://casper-flow-ly5p.vercel.app)
-- **📦 GitHub**: [https://github.com/Abhishekgoyal007/CasperFlow](https://github.com/Abhishekgoyal007/CasperFlow)
+</div>
 
-## 🔥 Testnet Deployment
+---
 
-| Contract | Deploy Hash | Status |
-|----------|-------------|--------|
-| Flipper (Demo) | [`629ac8f7...49152b8`](https://testnet.cspr.live/deploy/629ac8f710fd969e8b4ddcb2fc4d7d14f91792aef98643c0d932fbe2e49152b8) | ✅ Deployed |
-| SubscriptionManager | [`55fb7395...88d2143`](https://testnet.cspr.live/deploy/55fb73955a3e736cd516af0956057a2c55f986d1b3a421b403294a2c288d2143) | ✅ Deployed |
-| UsageMeter | Code Ready | 📝 Development |
-| BillingEngine | Code Ready | 📝 Development |
-| StakeToPay | Code Ready | 📝 Development |
+## 🎯 Problem
 
-**Network:** Casper Testnet  
-**Wallet:** `0203f725...7f7C15` (5,000 CSPR funded)  
-**RPC:** `https://node.testnet.casper.network/rpc`
+Traditional subscription billing has fundamental issues:
+- **High fees**: Credit card processors charge 2.9% + $0.30 per transaction
+- **No transparency**: Hidden charges and unclear billing cycles
+- **Geographic restrictions**: Bank-dependent, excludes global customers
+- **No ownership**: Companies can cancel your subscription anytime
+
+## 💡 Solution
+
+CasperFlow brings subscription billing on-chain:
+- **Near-zero fees**: Pay only gas costs (~0.01%)
+- **100% transparent**: All transactions verifiable on blockchain
+- **Borderless**: Anyone with a wallet can subscribe
+- **User ownership**: Subscriptions are yours, stored on-chain
+
+---
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     CASPERFLOW ARCHITECTURE                  │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│   ┌──────────────┐     ┌──────────────┐     ┌─────────────┐ │
+│   │   FRONTEND   │────▶│   NEXT.js    │────▶│   CASPER    │ │
+│   │   (React)    │     │   API Routes │     │   TESTNET   │ │
+│   └──────────────┘     └──────────────┘     └─────────────┘ │
+│          │                    │                    │        │
+│          ▼                    ▼                    ▼        │
+│   ┌──────────────┐     ┌──────────────┐     ┌─────────────┐ │
+│   │   Casper     │     │  /api/verify │     │   Smart     │ │
+│   │   Wallet     │     │  /api/plans  │     │  Contracts  │ │
+│   └──────────────┘     └──────────────┘     └─────────────┘ │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 📜 Deployed Contracts
+
+| Contract | Network | Deploy Hash | Status |
+|----------|---------|-------------|--------|
+| Flipper (Test) | Testnet | `629ac8f710fd969e8b4ddcb2fc4d7d14f91792aef98643c0d932fbe2e49152b8` | ✅ Verified |
+| SubscriptionManager | Testnet | `55fb73955a3e736cd516af0956057a2c55f986d1b3a421b403294a2c288d2143` | ✅ Verified |
+
+View on explorer: [testnet.cspr.live](https://testnet.cspr.live/deploy/55fb73955a3e736cd516af0956057a2c55f986d1b3a421b403294a2c288d2143)
+
+---
 
 ## ✨ Features
 
-### 📦 Recurring Subscriptions
-Create monthly, weekly, or custom billing cycles. Auto-charge subscribers on-chain with full transparency.
+### For Merchants
+- ✅ Create subscription plans with custom pricing
+- ✅ Track subscribers and revenue
+- ✅ Download invoices
+- ✅ Usage analytics dashboard
+- ✅ Real-time notifications
 
-### 📊 Usage-Based Metering
-Track API calls, storage, compute units, or any custom metric. Bill users exactly for what they use.
+### For Users
+- ✅ Browse and subscribe to plans
+- ✅ Pay with CSPR (real on-chain transactions)
+- ✅ Receive API keys for service access
+- ✅ Manage subscriptions
+- ✅ View usage and invoices
 
-### 💰 Stake-to-Pay
-Revolutionary feature: Users pay subscriptions from staking rewards. Keep tokens staked, never sell — still access premium services.
+### For Developers
+- ✅ REST API for subscription verification
+- ✅ JavaScript SDK documentation
+- ✅ Webhook events (coming soon)
+- ✅ On-chain data verification
 
-### 🌐 Cross-Chain Payments
-Accept payments from Ethereum, Polygon, and more. All settled on Casper for unified billing.
+---
 
-### 🧾 On-Chain Invoices
-Every bill, payment, and usage record stored on-chain. Full auditability and trust.
+## 🚀 Quick Start
 
-### 🛠 Developer SDK
-TypeScript/JavaScript SDK with simple APIs. Integrate billing in minutes, not weeks.
+### Prerequisites
+- Node.js 18+
+- [Casper Wallet](https://chrome.google.com/webstore/detail/casper-wallet) browser extension
+- Test CSPR from [faucet](https://testnet.cspr.live/tools/faucet)
 
-## 🏗 Architecture
+### Installation
 
+```bash
+# Clone the repository
+git clone https://github.com/Abhishekgoyal007/CasperFlow.git
+cd CasperFlow
+
+# Install frontend dependencies
+cd frontend
+npm install
+
+# Run development server
+npm run dev
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        CasperFlow Protocol                       │
-├─────────────────┬─────────────────┬───────────────┬─────────────┤
-│  Subscription   │   Usage Meter   │   Billing     │  Stake-to   │
-│    Manager      │                 │   Engine      │    Pay      │
-├─────────────────┴─────────────────┴───────────────┴─────────────┤
-│                     Casper Blockchain                            │
-└─────────────────────────────────────────────────────────────────┘
-                              ▲
-                              │ Cross-chain Bridge
-                              │
-┌─────────────────────────────┴───────────────────────────────────┐
-│           Ethereum / Polygon / Arbitrum / Optimism               │
-└─────────────────────────────────────────────────────────────────┘
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+---
+
+## 🔌 API Integration
+
+### Verify Subscription
+
+```bash
+# Check if an API key is valid
+curl "https://casperflow.vercel.app/api/verify?apiKey=cf_sk_xxx"
 ```
+
+**Response:**
+```json
+{
+    "valid": true,
+    "planName": "Pro API",
+    "expiresAt": 1708012800000,
+    "network": "testnet"
+}
+```
+
+### List Plans
+
+```bash
+curl "https://casperflow.vercel.app/api/plans"
+```
+
+### Example Integration (Express.js)
+
+```javascript
+async function requireSubscription(req, res, next) {
+    const apiKey = req.headers['x-api-key'];
+    
+    const response = await fetch(
+        `https://casperflow.vercel.app/api/verify?apiKey=${apiKey}`
+    );
+    const data = await response.json();
+    
+    if (!data.valid) {
+        return res.status(403).json({ error: 'Invalid subscription' });
+    }
+    
+    next();
+}
+
+app.get('/api/protected', requireSubscription, handler);
+```
+
+See full documentation: [docs/SDK.md](./docs/SDK.md)
+
+---
 
 ## 📁 Project Structure
 
 ```
 CasperFlow/
-├── frontend/           # Next.js 14 dashboard application
+├── frontend/                 # Next.js frontend application
 │   ├── src/
-│   │   ├── app/       # App router pages
-│   │   └── components/
+│   │   ├── app/             # Next.js app router pages
+│   │   │   ├── api/         # API routes (verify, plans)
+│   │   │   ├── app/         # Dashboard pages
+│   │   │   └── page.tsx     # Landing page
+│   │   ├── components/      # React components
+│   │   ├── context/         # React contexts (Wallet, Plans, etc.)
+│   │   └── lib/             # Utilities (casper.ts)
 │   └── package.json
-│
-├── contracts/          # Rust/Odra smart contracts
+├── casperflow_contracts/    # Rust smart contracts (Odra)
 │   ├── src/
-│   │   ├── subscription_manager.rs
-│   │   ├── usage_meter.rs
-│   │   ├── billing_engine.rs
-│   │   └── stake_to_pay.rs
-│   └── Cargo.toml
-│
-├── sdk/                # TypeScript SDK
-│   ├── src/
-│   └── package.json
-│
-└── cross-chain/        # Cross-chain payment module
-    ├── contracts/      # Solidity contracts
-    └── relayer/        # Bridge relayer service
+│   │   ├── flipper.rs       # Test contract
+│   │   └── subscription_manager.rs  # Main subscription contract
+│   ├── Cargo.toml
+│   └── Odra.toml
+├── docs/                    # Documentation
+│   └── SDK.md              # Developer SDK guide
+└── README.md
 ```
 
-## 🚀 Quick Start
+---
 
-### Frontend
+## 🛠️ Technology Stack
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
+| Layer | Technology |
+|-------|------------|
+| Blockchain | Casper Network (Testnet) |
+| Smart Contracts | Rust + Odra Framework |
+| Frontend | Next.js 14, React 19, TypeScript |
+| Styling | TailwindCSS 4 |
+| Wallet | Casper Wallet Extension |
+| SDK | casper-js-sdk |
 
-Visit http://localhost:3000
+---
 
-### Contracts
+## 📊 Demo Flow
 
-```bash
-cd contracts
-cargo odra build
-cargo odra test
-```
+1. **Connect Wallet** - Link your Casper Wallet (testnet)
+2. **Create Plan** (Merchant) - Set name, price, billing period
+3. **Browse Plans** (User) - View available subscriptions
+4. **Subscribe** - Pay with CSPR, get API key
+5. **Verify** - Use API to check subscription status
+6. **Manage** - View usage, invoices, cancel anytime
 
-### SDK
+---
 
-```bash
-cd sdk
-npm install
-npm run build
-```
+## 🔮 Roadmap
 
-## 💻 SDK Usage
+- [x] Core subscription management
+- [x] Wallet integration
+- [x] API verification endpoint
+- [x] Usage tracking
+- [x] Invoice generation
+- [ ] Stake-to-Pay (pay subscriptions from staking yield)
+- [ ] Webhooks for real-time events
+- [ ] Cross-chain settlements
+- [ ] Full SDK package (npm)
 
-```typescript
-import { CasperFlow, PaymentMethod } from '@casperflow/sdk';
+---
 
-const casperflow = new CasperFlow({
-  nodeUrl: 'https://rpc.testnet.casperlabs.io/rpc',
-  network: 'casper-test'
-});
+## 🏆 Built For
 
-// Merchant: Create a plan
-const planId = await casperflow.createPlan({
-  name: 'Pro API',
-  basePrice: 50n * 10n**9n,  // 50 CSPR
-  usagePrice: 1n * 10n**6n,  // 0.001 CSPR per call
-  billingCycle: 'monthly'
-});
+**Casper Hackathon 2024**
 
-// User: Subscribe with stake-to-pay
-const subscriptionId = await casperflow.subscribe({
-  planId,
-  autoRenew: true,
-  paymentMethod: PaymentMethod.Staked
-});
+---
 
-// Merchant: Record usage
-await casperflow.recordUsage({
-  subscriptionId,
-  units: 1000,
-  metric: 'api_calls'
-});
-```
-
-## 📄 Smart Contracts
-
-### SubscriptionManager
-Manages subscription plans and user subscriptions.
-
-```rust
-// Create a plan
-CasperFlow.createPlan({
-  name: "Pro API",
-  basePrice: 50_000_000_000, // 50 CSPR
-  usagePrice: 1_000_000,     // 0.001 CSPR per call
-  billingCycle: 2592000      // 30 days
-});
-
-// Subscribe
-CasperFlow.subscribe({
-  planId: 1,
-  autoRenew: true,
-  paymentMethod: 1  // 0=wallet, 1=staked
-});
-```
-
-### UsageMeter
-Tracks API calls, storage, and custom metrics.
-
-```rust
-// Record usage
-CasperFlow.recordUsage({
-  subscriptionId: 1,
-  metric: "api_calls",
-  units: 100
-});
-```
-
-### BillingEngine
-Calculates bills and processes payments.
-
-```rust
-// Invoice structure
-{
-  baseAmount: 50 CSPR,
-  usageAmount: 1.5 CSPR,  // 1500 calls × 0.001
-  totalAmount: 51.5 CSPR
-}
-```
-
-### StakeToPay
-Pay subscriptions from staking rewards (~8% APY).
-
-```rust
-// Deposit for staking
-CasperFlow.deposit(1000_000_000_000); // 1000 CSPR
-
-// Pay invoice from rewards
-CasperFlow.payInvoiceFromRewards(invoiceId);
-```
-
-## 🌉 Cross-Chain Payments
-
-Accept payments from Ethereum:
-
-```solidity
-// User pays in ETH
-PaymentBridge.payWithEth(casperInvoiceId, expectedCsprAmount);
-
-// Or with USDC
-PaymentBridge.payWithUsdc(casperInvoiceId, usdcAmount, expectedCsprAmount);
-```
-
-## 🎯 Use Cases
-
-- **AI API Providers** - Charge per request, per token, or per image
-- **Gaming Platforms** - Pay-per-match or monthly subscriptions
-- **Decentralized Storage** - Bill per GB stored or downloaded
-- **Content Platforms** - Premium newsletters and creator subscriptions
-
-## 🛣 Roadmap
-
-- [x] Landing page & dashboard UI
-- [x] Smart contract architecture
-- [x] TypeScript SDK
-- [x] Cross-chain bridge design
-- [x] Deploy frontend to Vercel
-- [ ] Deploy to Casper Testnet
-- [ ] Integration testing
-- [ ] Demo video
-- [ ] Mainnet launch
-
-## 📚 Documentation
-
-- [SDK Reference](./sdk/README.md)
-- [Contract Documentation](./contracts/README.md)
-- [Cross-Chain Guide](./cross-chain/README.md)
-
-## 🤝 Contributing
-
-Contributions are welcome! Please read our contributing guidelines.
-
-## 📜 License
+## 📄 License
 
 MIT License - see [LICENSE](./LICENSE)
 
 ---
 
-**Built with ❤️ for Casper Blockchain**
+## 🤝 Contributing
+
+Contributions are welcome! Please read our contributing guidelines first.
+
+---
+
+<div align="center">
+
+**Built with ❤️ on Casper**
+
+[Website](https://casperflow.vercel.app) · [Twitter](https://twitter.com/casperflow) · [Discord](https://discord.gg/casperflow)
+
+</div>
