@@ -35,7 +35,7 @@ export default function MerchantSubscribersPage() {
     const filteredSubscribers = mySubscribers.filter(s =>
         s.subscriberWallet.toLowerCase().includes(searchQuery.toLowerCase()) ||
         s.planName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        s.apiKey.toLowerCase().includes(searchQuery.toLowerCase())
+        (s.apiKey && s.apiKey.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
     // Calculate stats
@@ -156,9 +156,9 @@ export default function MerchantSubscribersPage() {
                                                 <div className="flex items-center gap-2">
                                                     <Key className="w-4 h-4 text-green-400" />
                                                     <span className="font-mono text-xs text-gray-400">
-                                                        {showKeyId === sub.id
-                                                            ? sub.apiKey
-                                                            : `${sub.apiKey.slice(0, 10)}...`
+                                                        {sub.apiKey
+                                                            ? (showKeyId === sub.id ? sub.apiKey : `${sub.apiKey.slice(0, 10)}...`)
+                                                            : 'No API Key'
                                                         }
                                                     </span>
                                                     <button
@@ -180,8 +180,8 @@ export default function MerchantSubscribersPage() {
                                             </td>
                                             <td className="py-4 px-6">
                                                 <span className={`text-xs px-2 py-1 rounded-full ${sub.status === 'active'
-                                                        ? 'bg-green-500/20 text-green-400'
-                                                        : 'bg-red-500/20 text-red-400'
+                                                    ? 'bg-green-500/20 text-green-400'
+                                                    : 'bg-red-500/20 text-red-400'
                                                     }`}>
                                                     {sub.status === 'active' ? '● Active' : '● Cancelled'}
                                                 </span>

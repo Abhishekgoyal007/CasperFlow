@@ -237,7 +237,7 @@ export default function UserUsagePage() {
                                         <div>
                                             <div className="font-semibold text-white">{sub.planName}</div>
                                             <div className="text-xs text-gray-500 font-mono">
-                                                {sub.apiKey.slice(0, 12)}...{sub.apiKey.slice(-4)}
+                                                {sub.apiKey ? `${sub.apiKey.slice(0, 12)}...${sub.apiKey.slice(-4)}` : 'No API Key'}
                                             </div>
                                         </div>
                                     </div>
