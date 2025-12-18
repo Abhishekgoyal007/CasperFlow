@@ -1,6 +1,7 @@
 "use client";
 
 import { DashboardLayout } from "@/components/dashboard";
+import { useWallet } from "@/context/WalletContext";
 import {
     TrendingUp,
     TrendingDown,
@@ -9,8 +10,10 @@ import {
     BarChart3,
     Zap,
     ArrowUpRight,
-    Plus
+    Plus,
+    Wallet
 } from "lucide-react";
+import Link from "next/link";
 
 const stats = [
     {
@@ -62,19 +65,45 @@ const plans = [
 ];
 
 export default function MerchantDashboard() {
+    const { isConnected, address, balance, network } = useWallet();
+
     return (
         <DashboardLayout type="merchant">
             <div className="space-y-8">
+                {/* Wallet Status Banner */}
+                {isConnected && (
+                    <div className="bg-gradient-to-r from-green-500/10 to-cyan-500/10 border border-green-500/20 rounded-xl p-4">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                                    <Wallet className="w-5 h-5 text-green-400" />
+                                </div>
+                                <div>
+                                    <div className="text-sm text-gray-400">Connected Merchant Wallet</div>
+                                    <div className="font-mono text-white">{address}</div>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <div className="text-lg font-bold text-green-400">{balance} CSPR</div>
+                                <div className="text-xs text-gray-500 capitalize">{network}</div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+                        <h1 className="text-3xl font-bold text-white">Merchant Dashboard</h1>
                         <p className="text-gray-400 mt-1">Welcome back! Here's your business overview.</p>
                     </div>
-                    <button className="inline-flex items-center gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-3 px-6 rounded-xl transition-all hover:scale-105">
+                    <Link
+                        href="/app/merchant/plans"
+                        className="inline-flex items-center gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-3 px-6 rounded-xl transition-all hover:scale-105"
+                    >
                         <Plus className="w-5 h-5" />
                         Create Plan
-                    </button>
+                    </Link>
                 </div>
 
                 {/* Stats Grid */}

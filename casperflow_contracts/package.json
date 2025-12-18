@@ -1,0 +1,11 @@
+{
+    "name": "casperflow-contracts-deploy",
+    "version": "1.0.0",
+    "description": "Deployment scripts for CasperFlow contracts",
+    "scripts": {
+        "deploy": "node deploy.js"
+    },
+    "dependencies": {
+        "casper-js-sdk": "^2.15.4"
+    }
+}

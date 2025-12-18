@@ -11,6 +11,20 @@ CasperFlow is the first protocol enabling usage-based billing, stake-powered pay
 - **🌐 Live Demo**: [https://casper-flow-ly5p.vercel.app](https://casper-flow-ly5p.vercel.app)
 - **📦 GitHub**: [https://github.com/Abhishekgoyal007/CasperFlow](https://github.com/Abhishekgoyal007/CasperFlow)
 
+## 🔥 Testnet Deployment
+
+| Contract | Deploy Hash | Status |
+|----------|-------------|--------|
+| Flipper (Demo) | [`629ac8f7...49152b8`](https://testnet.cspr.live/deploy/629ac8f710fd969e8b4ddcb2fc4d7d14f91792aef98643c0d932fbe2e49152b8) | ✅ Deployed |
+| SubscriptionManager | [`55fb7395...88d2143`](https://testnet.cspr.live/deploy/55fb73955a3e736cd516af0956057a2c55f986d1b3a421b403294a2c288d2143) | ✅ Deployed |
+| UsageMeter | Code Ready | 📝 Development |
+| BillingEngine | Code Ready | 📝 Development |
+| StakeToPay | Code Ready | 📝 Development |
+
+**Network:** Casper Testnet  
+**Wallet:** `0203f725...7f7C15` (5,000 CSPR funded)  
+**RPC:** `https://node.testnet.casper.network/rpc`
+
 ## ✨ Features
 
 ### 📦 Recurring Subscriptions

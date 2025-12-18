@@ -1,2 +1,20 @@
+# CasperFlow Contract Configuration
+name = "casperflow_contracts"
+
+# Contract definitions
 [[contracts]]
 fqn = "flipper::Flipper"
+
+[[contracts]]
+fqn = "subscription_manager::SubscriptionManager"
+
+# Network configurations
+[networks.testnet]
+node_address = "https://node.testnet.casper.network"
+chain_name = "casper-test"
+secret_key_path = "secret_key.pem"
+
+[networks.mainnet]
+node_address = "http://65.21.235.219:7777"
+chain_name = "casper"
+secret_key_path = "secret_key.pem"

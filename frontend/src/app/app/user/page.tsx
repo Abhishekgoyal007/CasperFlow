@@ -1,6 +1,7 @@
 "use client";
 
 import { DashboardLayout } from "@/components/dashboard";
+import { useWallet } from "@/context/WalletContext";
 import {
     CreditCard,
     BarChart3,
@@ -8,8 +9,10 @@ import {
     ArrowUpRight,
     Clock,
     CheckCircle,
-    AlertCircle
+    AlertCircle,
+    Wallet
 } from "lucide-react";
+import Link from "next/link";
 
 const activeSubscriptions = [
     {
@@ -44,9 +47,9 @@ const activeSubscriptions = [
 const usageHistory = [
     { date: "Today", calls: 1234, cost: "1.23 CSPR" },
     { date: "Yesterday", calls: 2156, cost: "2.16 CSPR" },
-    { date: "Dec 14", calls: 1876, cost: "1.88 CSPR" },
-    { date: "Dec 13", calls: 2543, cost: "2.54 CSPR" },
-    { date: "Dec 12", calls: 1654, cost: "1.65 CSPR" },
+    { date: "Dec 16", calls: 1876, cost: "1.88 CSPR" },
+    { date: "Dec 15", calls: 2543, cost: "2.54 CSPR" },
+    { date: "Dec 14", calls: 1654, cost: "1.65 CSPR" },
 ];
 
 const stats = [
@@ -71,13 +74,45 @@ const stats = [
 ];
 
 export default function UserDashboard() {
+    const { isConnected, address, balance, network } = useWallet();
+
     return (
         <DashboardLayout type="user">
             <div className="space-y-8">
+                {/* Wallet Status Banner */}
+                {isConnected && (
+                    <div className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-xl p-4">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+                                    <Wallet className="w-5 h-5 text-purple-400" />
+                                </div>
+                                <div>
+                                    <div className="text-sm text-gray-400">Connected Wallet</div>
+                                    <div className="font-mono text-white">{address}</div>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <div className="text-lg font-bold text-purple-400">{balance} CSPR</div>
+                                <div className="text-xs text-gray-500 capitalize">{network}</div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Header */}
-                <div>
-                    <h1 className="text-3xl font-bold text-white">My Dashboard</h1>
-                    <p className="text-gray-400 mt-1">Manage your subscriptions and track usage.</p>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h1 className="text-3xl font-bold text-white">My Dashboard</h1>
+                        <p className="text-gray-400 mt-1">Manage your subscriptions and track usage.</p>
+                    </div>
+                    <Link
+                        href="/app/user/subscriptions"
+                        className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-semibold py-3 px-6 rounded-xl transition-all hover:scale-105"
+                    >
+                        <Zap className="w-5 h-5" />
+                        Browse Plans
+                    </Link>
                 </div>
 
                 {/* Stats Grid */}
@@ -213,13 +248,23 @@ export default function UserDashboard() {
                                 <Zap className="w-6 h-6 text-green-500" />
                             </div>
                             <div>
-                                <div className="font-semibold text-white">Stake-to-Pay Enabled</div>
-                                <div className="text-sm text-gray-400">Paying subscriptions from staking rewards</div>
+                                <div className="font-semibold text-white">
+                                    {isConnected ? "Stake-to-Pay Enabled" : "Connect Wallet to Enable"}
+                                </div>
+                                <div className="text-sm text-gray-400">
+                                    {isConnected
+                                        ? "Pay subscriptions from staking rewards"
+                                        : "Connect your wallet to enable payments"}
+                                </div>
                             </div>
                         </div>
                         <div className="text-right">
-                            <div className="text-lg font-bold text-green-400">1,250 CSPR</div>
-                            <div className="text-xs text-gray-500">Available rewards</div>
+                            <div className="text-lg font-bold text-green-400">
+                                {isConnected ? `${balance} CSPR` : "-- CSPR"}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                                {isConnected ? "Wallet Balance" : "Not connected"}
+                            </div>
                         </div>
                     </div>
                 </div>
