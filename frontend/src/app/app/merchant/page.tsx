@@ -2,17 +2,17 @@
 
 import { DashboardLayout } from "@/components/dashboard";
 import { useWallet } from "@/context/WalletContext";
+import { usePlans } from "@/context/PlansContext";
 import {
-    TrendingUp,
     Users,
     CreditCard,
     BarChart3,
     Zap,
-    ArrowUpRight,
     Plus,
     Wallet,
     Package,
-    ExternalLink
+    ExternalLink,
+    ArrowUpRight
 } from "lucide-react";
 import Link from "next/link";
 
@@ -21,28 +21,33 @@ const SUBSCRIPTION_MANAGER_HASH = "55fb73955a3e736cd516af0956057a2c55f986d1b3a42
 
 export default function MerchantDashboard() {
     const { isConnected, address, balance, network, publicKey } = useWallet();
+    const { plans } = usePlans();
 
-    // Real stats would come from contract - showing zeros for fresh deployment
+    // Filter plans created by current wallet
+    const myPlans = plans.filter(p => p.createdBy === address);
+    const totalRevenue = myPlans.reduce((sum, p) => sum + p.revenue, 0);
+    const totalSubscribers = myPlans.reduce((sum, p) => sum + p.subscribers, 0);
+
     const stats = [
         {
             title: "Total Revenue",
-            value: "0 CSPR",
+            value: `${totalRevenue} CSPR`,
             subtitle: "From subscriptions",
             icon: CreditCard,
             color: "#10b981",
         },
         {
             title: "Active Subscribers",
-            value: "0",
+            value: totalSubscribers.toString(),
             subtitle: "Across all plans",
             icon: Users,
             color: "#8b5cf6",
         },
         {
-            title: "API Calls",
-            value: "0",
-            subtitle: "This month",
-            icon: BarChart3,
+            title: "Active Plans",
+            value: myPlans.length.toString(),
+            subtitle: "Created by you",
+            icon: Package,
             color: "#3b82f6",
         },
         {
@@ -60,31 +65,19 @@ export default function MerchantDashboard() {
                 {/* Testnet Banner */}
                 <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center">
-                            <Zap className="w-4 h-4 text-yellow-400" />
-                        </div>
+                        <Zap className="w-5 h-5 text-yellow-400" />
                         <div className="flex-1">
-                            <div className="text-sm font-medium text-yellow-400">Testnet Mode</div>
-                            <div className="text-xs text-gray-400">
-                                Contract deployed at{" "}
-                                <a
-                                    href={`https://testnet.cspr.live/deploy/${SUBSCRIPTION_MANAGER_HASH}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-yellow-400 hover:underline"
-                                >
-                                    {SUBSCRIPTION_MANAGER_HASH.slice(0, 8)}...
-                                </a>
-                            </div>
+                            <span className="text-sm text-yellow-400">Testnet Mode</span>
+                            <span className="text-gray-400 text-sm mx-2">•</span>
+                            <a
+                                href={`https://testnet.cspr.live/deploy/${SUBSCRIPTION_MANAGER_HASH}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-gray-400 hover:text-white"
+                            >
+                                View Contract <ExternalLink className="w-3 h-3 inline" />
+                            </a>
                         </div>
-                        <a
-                            href={`https://testnet.cspr.live/deploy/${SUBSCRIPTION_MANAGER_HASH}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-yellow-400 hover:text-yellow-300"
-                        >
-                            <ExternalLink className="w-4 h-4" />
-                        </a>
                     </div>
                 </div>
 
@@ -153,61 +146,72 @@ export default function MerchantDashboard() {
                     ))}
                 </div>
 
-                {/* Empty State for Plans */}
-                <div className="bg-[#12121a] border border-white/10 rounded-2xl p-8">
-                    <div className="text-center py-12">
-                        <div className="w-16 h-16 rounded-2xl bg-purple-500/20 flex items-center justify-center mx-auto mb-4">
-                            <Package className="w-8 h-8 text-purple-500" />
-                        </div>
-                        <h3 className="text-xl font-semibold text-white mb-2">No Plans Created Yet</h3>
-                        <p className="text-gray-400 mb-6 max-w-md mx-auto">
-                            Create your first subscription plan to start accepting recurring payments from customers.
-                        </p>
-                        <Link
-                            href="/app/merchant/plans"
-                            className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition-all"
-                        >
-                            <Plus className="w-5 h-5" />
-                            Create Your First Plan
-                        </Link>
-                    </div>
-                </div>
-
-                {/* Recent Activity */}
-                <div className="bg-[#12121a] border border-white/10 rounded-2xl p-6">
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-lg font-semibold text-white">Recent Activity</h3>
-                        <span className="text-sm text-gray-500">From testnet</span>
-                    </div>
-
-                    <div className="text-center py-8">
-                        <div className="text-gray-500">No activity yet</div>
-                        <div className="text-sm text-gray-600 mt-1">
-                            Subscriber activity will appear here
+                {/* Plans Section */}
+                {myPlans.length === 0 ? (
+                    <div className="bg-[#12121a] border border-white/10 rounded-2xl p-8">
+                        <div className="text-center py-12">
+                            <div className="w-16 h-16 rounded-2xl bg-purple-500/20 flex items-center justify-center mx-auto mb-4">
+                                <Package className="w-8 h-8 text-purple-500" />
+                            </div>
+                            <h3 className="text-xl font-semibold text-white mb-2">No Plans Created Yet</h3>
+                            <p className="text-gray-400 mb-6 max-w-md mx-auto">
+                                Create your first subscription plan to start accepting recurring payments from customers.
+                            </p>
+                            <Link
+                                href="/app/merchant/plans"
+                                className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold py-3 px-6 rounded-xl"
+                            >
+                                <Plus className="w-5 h-5" />
+                                Create Your First Plan
+                            </Link>
                         </div>
                     </div>
-                </div>
+                ) : (
+                    <div className="bg-[#12121a] border border-white/10 rounded-2xl p-6">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-lg font-semibold text-white">Your Plans</h3>
+                            <Link
+                                href="/app/merchant/plans"
+                                className="text-sm text-purple-400 hover:text-purple-300 flex items-center gap-1"
+                            >
+                                View All <ArrowUpRight className="w-4 h-4" />
+                            </Link>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {myPlans.slice(0, 3).map((plan) => (
+                                <div key={plan.id} className="bg-white/5 rounded-xl p-4">
+                                    <h4 className="font-semibold text-white">{plan.name}</h4>
+                                    <div className="text-2xl font-bold text-white mt-2">
+                                        {plan.price} <span className="text-sm text-gray-400">CSPR/{plan.period}</span>
+                                    </div>
+                                    <div className="flex justify-between mt-4 text-sm">
+                                        <span className="text-gray-400">{plan.subscribers} subscribers</span>
+                                        <span className="text-green-400">{plan.revenue} CSPR</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* Contract Info */}
                 <div className="bg-[#12121a] border border-white/10 rounded-2xl p-6">
                     <h3 className="text-lg font-semibold text-white mb-4">Deployed Contracts</h3>
-                    <div className="space-y-3">
-                        <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                            <div>
-                                <div className="font-medium text-white">SubscriptionManager</div>
-                                <div className="text-xs text-gray-500 font-mono">
-                                    {SUBSCRIPTION_MANAGER_HASH.slice(0, 16)}...{SUBSCRIPTION_MANAGER_HASH.slice(-8)}
-                                </div>
+                    <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                        <div>
+                            <div className="font-medium text-white">SubscriptionManager</div>
+                            <div className="text-xs text-gray-500 font-mono">
+                                {SUBSCRIPTION_MANAGER_HASH.slice(0, 16)}...{SUBSCRIPTION_MANAGER_HASH.slice(-8)}
                             </div>
-                            <a
-                                href={`https://testnet.cspr.live/deploy/${SUBSCRIPTION_MANAGER_HASH}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-1 text-sm text-green-400 hover:text-green-300"
-                            >
-                                View <ExternalLink className="w-3 h-3" />
-                            </a>
                         </div>
+                        <a
+                            href={`https://testnet.cspr.live/deploy/${SUBSCRIPTION_MANAGER_HASH}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-sm text-green-400 hover:text-green-300"
+                        >
+                            View <ExternalLink className="w-3 h-3" />
+                        </a>
                     </div>
                 </div>
             </div>

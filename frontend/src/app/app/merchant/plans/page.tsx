@@ -3,46 +3,78 @@
 import { useState } from "react";
 import { DashboardLayout } from "@/components/dashboard";
 import { useWallet } from "@/context/WalletContext";
-import { usePlans } from "@/context/PlansContext";
+import { usePlans, Plan } from "@/context/PlansContext";
 import {
     Plus,
     Package,
     Zap,
     ExternalLink,
     Trash2,
-    Users
+    Users,
+    Edit2,
+    X
 } from "lucide-react";
 
 // Contract deployed on testnet
 const SUBSCRIPTION_MANAGER_HASH = "55fb73955a3e736cd516af0956057a2c55f986d1b3a421b403294a2c288d2143";
 
 export default function MerchantPlansPage() {
-    const { isConnected, address, network } = useWallet();
-    const { plans, addPlan, deletePlan } = usePlans();
+    const { isConnected, address } = useWallet();
+    const { plans, addPlan, updatePlan, deletePlan } = usePlans();
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
 
     // Form state
-    const [newPlan, setNewPlan] = useState({
+    const [formData, setFormData] = useState({
         name: "",
         description: "",
         price: "",
         period: "monthly"
     });
 
+    const resetForm = () => {
+        setFormData({ name: "", description: "", price: "", period: "monthly" });
+    };
+
     const handleCreatePlan = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newPlan.name || !newPlan.price || !address) return;
+        if (!formData.name || !formData.price || !address) return;
 
         addPlan({
-            name: newPlan.name,
-            description: newPlan.description,
-            price: parseFloat(newPlan.price),
-            period: newPlan.period,
+            name: formData.name,
+            description: formData.description,
+            price: parseFloat(formData.price),
+            period: formData.period,
             createdBy: address
         });
 
-        setNewPlan({ name: "", description: "", price: "", period: "monthly" });
+        resetForm();
         setShowCreateModal(false);
+    };
+
+    const handleEditPlan = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingPlan || !formData.name || !formData.price) return;
+
+        updatePlan(editingPlan.id, {
+            name: formData.name,
+            description: formData.description,
+            price: parseFloat(formData.price),
+            period: formData.period
+        });
+
+        resetForm();
+        setEditingPlan(null);
+    };
+
+    const openEditModal = (plan: Plan) => {
+        setFormData({
+            name: plan.name,
+            description: plan.description,
+            price: plan.price.toString(),
+            period: plan.period
+        });
+        setEditingPlan(plan);
     };
 
     // Filter plans created by current wallet
@@ -77,7 +109,7 @@ export default function MerchantPlansPage() {
                         <p className="text-gray-400 mt-1">Create and manage your subscription tiers.</p>
                     </div>
                     <button
-                        onClick={() => setShowCreateModal(true)}
+                        onClick={() => { resetForm(); setShowCreateModal(true); }}
                         disabled={!isConnected}
                         className="inline-flex items-center gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-3 px-6 rounded-xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                     >
@@ -101,8 +133,8 @@ export default function MerchantPlansPage() {
                                 <p className="text-sm text-yellow-400">Connect your wallet to create plans</p>
                             ) : (
                                 <button
-                                    onClick={() => setShowCreateModal(true)}
-                                    className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition-all"
+                                    onClick={() => { resetForm(); setShowCreateModal(true); }}
+                                    className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold py-3 px-6 rounded-xl"
                                 >
                                     <Plus className="w-5 h-5" />
                                     Create Your First Plan
@@ -144,13 +176,21 @@ export default function MerchantPlansPage() {
                                         </div>
                                     </div>
 
-                                    <button
-                                        onClick={() => deletePlan(plan.id)}
-                                        className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all text-sm"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                        Delete Plan
-                                    </button>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => openEditModal(plan)}
+                                            className="flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white transition-all text-sm"
+                                        >
+                                            <Edit2 className="w-4 h-4" />
+                                            Edit
+                                        </button>
+                                        <button
+                                            onClick={() => deletePlan(plan.id)}
+                                            className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all text-sm"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         ))}
@@ -160,22 +200,24 @@ export default function MerchantPlansPage() {
                 {/* Create Plan Modal */}
                 {showCreateModal && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                        <div
-                            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-                            onClick={() => setShowCreateModal(false)}
-                        />
+                        <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setShowCreateModal(false)} />
                         <div className="relative bg-[#12121a] border border-white/10 rounded-2xl p-8 max-w-lg w-full">
-                            <h2 className="text-2xl font-bold text-white mb-6">Create New Plan</h2>
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-2xl font-bold text-white">Create New Plan</h2>
+                                <button onClick={() => setShowCreateModal(false)} className="text-gray-400 hover:text-white">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
 
                             <form onSubmit={handleCreatePlan} className="space-y-6">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-400 mb-2">Plan Name *</label>
                                     <input
                                         type="text"
-                                        value={newPlan.name}
-                                        onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })}
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                         placeholder="e.g., Pro API"
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-red-500 transition-colors"
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-red-500"
                                         required
                                     />
                                 </div>
@@ -183,11 +225,11 @@ export default function MerchantPlansPage() {
                                 <div>
                                     <label className="block text-sm font-medium text-gray-400 mb-2">Description</label>
                                     <textarea
-                                        value={newPlan.description}
-                                        onChange={(e) => setNewPlan({ ...newPlan, description: e.target.value })}
+                                        value={formData.description}
+                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                         placeholder="Describe what this plan offers..."
                                         rows={3}
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-red-500 transition-colors resize-none"
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-red-500 resize-none"
                                     />
                                 </div>
 
@@ -196,20 +238,20 @@ export default function MerchantPlansPage() {
                                         <label className="block text-sm font-medium text-gray-400 mb-2">Price (CSPR) *</label>
                                         <input
                                             type="number"
-                                            value={newPlan.price}
-                                            onChange={(e) => setNewPlan({ ...newPlan, price: e.target.value })}
+                                            value={formData.price}
+                                            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                                             placeholder="50"
                                             min="0"
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-red-500 transition-colors"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-red-500"
                                             required
                                         />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-400 mb-2">Billing Period</label>
                                         <select
-                                            value={newPlan.period}
-                                            onChange={(e) => setNewPlan({ ...newPlan, period: e.target.value })}
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-red-500 transition-colors"
+                                            value={formData.period}
+                                            onChange={(e) => setFormData({ ...formData, period: e.target.value })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-red-500"
                                         >
                                             <option value="monthly">Monthly</option>
                                             <option value="yearly">Yearly</option>
@@ -218,25 +260,85 @@ export default function MerchantPlansPage() {
                                     </div>
                                 </div>
 
-                                <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3">
-                                    <p className="text-xs text-yellow-400">
-                                        ⚠️ Testnet Demo: Plans are stored in your browser. In production, they are saved on-chain via the SubscriptionManager contract.
-                                    </p>
+                                <div className="flex gap-4 pt-4">
+                                    <button type="button" onClick={() => setShowCreateModal(false)} className="flex-1 py-3 px-6 rounded-xl bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white font-medium">
+                                        Cancel
+                                    </button>
+                                    <button type="submit" className="flex-1 py-3 px-6 rounded-xl bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold">
+                                        Create Plan
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
+
+                {/* Edit Plan Modal */}
+                {editingPlan && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setEditingPlan(null)} />
+                        <div className="relative bg-[#12121a] border border-white/10 rounded-2xl p-8 max-w-lg w-full">
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-2xl font-bold text-white">Edit Plan</h2>
+                                <button onClick={() => setEditingPlan(null)} className="text-gray-400 hover:text-white">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            <form onSubmit={handleEditPlan} className="space-y-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400 mb-2">Plan Name *</label>
+                                    <input
+                                        type="text"
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500"
+                                        required
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400 mb-2">Description</label>
+                                    <textarea
+                                        value={formData.description}
+                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                        rows={3}
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 resize-none"
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-400 mb-2">Price (CSPR) *</label>
+                                        <input
+                                            type="number"
+                                            value={formData.price}
+                                            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                                            min="0"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-400 mb-2">Billing Period</label>
+                                        <select
+                                            value={formData.period}
+                                            onChange={(e) => setFormData({ ...formData, period: e.target.value })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500"
+                                        >
+                                            <option value="monthly">Monthly</option>
+                                            <option value="yearly">Yearly</option>
+                                            <option value="weekly">Weekly</option>
+                                        </select>
+                                    </div>
                                 </div>
 
                                 <div className="flex gap-4 pt-4">
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowCreateModal(false)}
-                                        className="flex-1 py-3 px-6 rounded-xl bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white transition-all font-medium"
-                                    >
+                                    <button type="button" onClick={() => setEditingPlan(null)} className="flex-1 py-3 px-6 rounded-xl bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white font-medium">
                                         Cancel
                                     </button>
-                                    <button
-                                        type="submit"
-                                        className="flex-1 py-3 px-6 rounded-xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold transition-all"
-                                    >
-                                        Create Plan
+                                    <button type="submit" className="flex-1 py-3 px-6 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold">
+                                        Save Changes
                                     </button>
                                 </div>
                             </form>

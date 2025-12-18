@@ -17,6 +17,7 @@ export interface Plan {
 interface PlansContextType {
     plans: Plan[];
     addPlan: (plan: Omit<Plan, 'id' | 'createdAt' | 'subscribers' | 'revenue'>) => void;
+    updatePlan: (id: string, updates: Partial<Pick<Plan, 'name' | 'description' | 'price' | 'period'>>) => void;
     deletePlan: (id: string) => void;
 }
 
@@ -53,12 +54,16 @@ export function PlansProvider({ children }: { children: ReactNode }) {
         setPlans(prev => [...prev, newPlan]);
     };
 
+    const updatePlan = (id: string, updates: Partial<Pick<Plan, 'name' | 'description' | 'price' | 'period'>>) => {
+        setPlans(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+    };
+
     const deletePlan = (id: string) => {
         setPlans(prev => prev.filter(p => p.id !== id));
     };
 
     return (
-        <PlansContext.Provider value={{ plans, addPlan, deletePlan }}>
+        <PlansContext.Provider value={{ plans, addPlan, updatePlan, deletePlan }}>
             {children}
         </PlansContext.Provider>
     );
