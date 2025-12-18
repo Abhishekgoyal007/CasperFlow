@@ -17,7 +17,8 @@ import {
     Check,
     Trash2,
     Coins,
-    Package
+    Package,
+    Globe
 } from "lucide-react";
 import { ConnectWalletButton } from "@/components/wallet";
 import { useNotifications } from "@/context/NotificationsContext";
@@ -37,6 +38,7 @@ const userNavItems = [
     { name: "Browse Plans", href: "/app/user/browse", icon: Package },
     { name: "My Subscriptions", href: "/app/user/subscriptions", icon: CreditCard },
     { name: "Stake-to-Pay", href: "/app/user/stake", icon: Coins },
+    { name: "Cross-Chain", href: "/app/user/cross-chain", icon: Globe, badge: "Soon" },
     { name: "Usage", href: "/app/user/usage", icon: BarChart3 },
     { name: "Invoices", href: "/app/user/invoices", icon: FileText },
     { name: "Settings", href: "/app/user/settings", icon: Settings },
@@ -132,6 +134,7 @@ export function DashboardLayout({ children, type }: DashboardLayoutProps) {
                     <ul className="space-y-1">
                         {navItems.map((item) => {
                             const isActive = pathname === item.href;
+                            const badge = 'badge' in item ? (item as any).badge : null;
                             return (
                                 <li key={item.name}>
                                     <Link
@@ -146,6 +149,11 @@ export function DashboardLayout({ children, type }: DashboardLayoutProps) {
                                     >
                                         <item.icon className={`w-5 h-5 ${isActive ? "text-red-500" : ""}`} />
                                         {item.name}
+                                        {badge && (
+                                            <span className="ml-auto text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full">
+                                                {badge}
+                                            </span>
+                                        )}
                                     </Link>
                                 </li>
                             );

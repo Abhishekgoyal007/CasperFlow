@@ -44,27 +44,48 @@ export default function UserBrowsePage() {
 
         try {
             let txResult: { deployHash: string; explorerUrl: string } | null = null;
+            let usedOnChain = false;
 
             // Try real on-chain subscription if enabled and wallet available
             if (useOnChain && publicKey && isCasperWalletAvailable()) {
-                // Check if merchant has a public key we can transfer to
-                const merchantPubKey = plan.merchantPublicKey || plan.createdBy;
+                // Check if merchant has a full public key we can transfer to
+                const merchantPubKey = plan.merchantPublicKey;
 
-                // Only do on-chain if we have a valid merchant public key (66 chars)
-                if (merchantPubKey && merchantPubKey.length >= 66) {
-                    txResult = await subscribeWithTransfer(
-                        publicKey,
-                        merchantPubKey,
-                        plan.price,
-                        network as 'testnet' | 'mainnet'
-                    );
-                    setTxHash(txResult.deployHash);
+                // Only do on-chain if we have a valid merchant public key (66 chars for ed25519)
+                if (merchantPubKey && merchantPubKey.length >= 64) {
+                    try {
+                        console.log('Initiating on-chain transfer:', {
+                            from: publicKey.slice(0, 16) + '...',
+                            to: merchantPubKey.slice(0, 16) + '...',
+                            amount: plan.price
+                        });
+
+                        txResult = await subscribeWithTransfer(
+                            publicKey,
+                            merchantPubKey,
+                            plan.price,
+                            network as 'testnet' | 'mainnet'
+                        );
+                        setTxHash(txResult.deployHash);
+                        usedOnChain = true;
+                    } catch (walletErr: any) {
+                        console.error('Wallet error:', walletErr);
+                        // If user cancelled, throw to stop the process
+                        if (walletErr.message?.includes('cancelled')) {
+                            throw walletErr;
+                        }
+                        // Otherwise fall back to demo mode
+                        setTxError(`On-chain failed: ${walletErr.message}. Using demo mode.`);
+                    }
                 } else {
-                    // No valid merchant key, use demo mode
-                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    // No valid merchant key - this plan was created before we saved full keys
+                    console.log('Plan missing merchantPublicKey, using demo mode. Plan created by:', plan.createdBy);
+                    setTxError('This plan was created before on-chain support. Using demo mode.');
                 }
-            } else {
-                // Demo mode - simulate transaction
+            }
+
+            // If not on-chain, simulate
+            if (!usedOnChain) {
                 await new Promise(resolve => setTimeout(resolve, 1500));
             }
 
