@@ -285,3 +285,82 @@ export function isCasperWalletAvailable(): boolean {
     if (typeof window === 'undefined') return false;
     return !!(window as any).CasperWalletProvider;
 }
+
+/**
+ * Simple CSPR Transfer - Most reliable method for subscriptions
+ * This creates a native CSPR transfer to the merchant's wallet
+ */
+export async function transferCSPR(
+    senderPublicKey: string,
+    recipientPublicKey: string,
+    amountInCSPR: number,
+    network: 'testnet' | 'mainnet' = 'testnet'
+): Promise<{ deployHash: string; explorerUrl: string }> {
+    if (!isCasperWalletAvailable()) {
+        throw new Error('Casper Wallet not available');
+    }
+
+    const sender = CLPublicKey.fromHex(senderPublicKey);
+    const recipient = CLPublicKey.fromHex(recipientPublicKey);
+    const amountMotes = csprToMotes(amountInCSPR);
+
+    // Build a simple transfer deploy
+    const deploy = DeployUtil.makeDeploy(
+        new DeployUtil.DeployParams(
+            sender,
+            CASPER_CONFIG[network].chainName,
+            1,
+            1800000
+        ),
+        DeployUtil.ExecutableDeployItem.newTransfer(
+            amountMotes,
+            recipient,
+            null, // no correlation id needed
+            1 // transfer id
+        ),
+        DeployUtil.standardPayment(100_000_000) // 0.1 CSPR gas for transfer
+    );
+
+    // Sign with wallet
+    const provider = (window as any).CasperWalletProvider();
+    const deployJson = DeployUtil.deployToJson(deploy);
+
+    const signResult = await provider.sign(
+        JSON.stringify(deployJson),
+        senderPublicKey
+    );
+
+    if (signResult.cancelled) {
+        throw new Error('Transaction cancelled by user');
+    }
+
+    // Reconstruct signed deploy
+    const signedDeploy = DeployUtil.setSignature(
+        deploy,
+        signResult.signature,
+        sender
+    );
+
+    // Send to network
+    const client = getCasperClient(network);
+    const deployHash = await client.putDeploy(signedDeploy);
+
+    return {
+        deployHash,
+        explorerUrl: getDeployExplorerUrl(deployHash, network)
+    };
+}
+
+/**
+ * Subscribe with native CSPR transfer
+ * Simpler and more reliable than contract calls
+ */
+export async function subscribeWithTransfer(
+    subscriberPublicKey: string,
+    merchantPublicKey: string,
+    priceInCSPR: number,
+    network: 'testnet' | 'mainnet' = 'testnet'
+): Promise<{ deployHash: string; explorerUrl: string }> {
+    return transferCSPR(subscriberPublicKey, merchantPublicKey, priceInCSPR, network);
+}
+

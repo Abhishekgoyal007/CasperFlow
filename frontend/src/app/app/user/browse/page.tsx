@@ -5,7 +5,7 @@ import { useWallet } from "@/context/WalletContext";
 import { usePlans } from "@/context/PlansContext";
 import { useSubscriptions, Subscription } from "@/context/SubscriptionsContext";
 import { useNotifications } from "@/context/NotificationsContext";
-import { subscribeToPlan, isCasperWalletAvailable, getDeployExplorerUrl } from "@/lib/casper";
+import { subscribeWithTransfer, isCasperWalletAvailable, getDeployExplorerUrl, CASPER_CONFIG } from "@/lib/casper";
 import {
     Package,
     Zap,
@@ -43,18 +43,26 @@ export default function UserBrowsePage() {
         setTxHash(null);
 
         try {
+            let txResult: { deployHash: string; explorerUrl: string } | null = null;
+
             // Try real on-chain subscription if enabled and wallet available
             if (useOnChain && publicKey && isCasperWalletAvailable()) {
-                const result = await subscribeToPlan(
-                    publicKey,
-                    parseInt(plan.id.replace(/\D/g, '')) || 1, // Extract numeric ID
-                    plan.price,
-                    network as 'testnet' | 'mainnet'
-                );
-                setTxHash(result.deployHash);
+                // Check if merchant has a public key we can transfer to
+                const merchantPubKey = plan.merchantPublicKey || plan.createdBy;
 
-                // Wait a bit then save locally
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                // Only do on-chain if we have a valid merchant public key (66 chars)
+                if (merchantPubKey && merchantPubKey.length >= 66) {
+                    txResult = await subscribeWithTransfer(
+                        publicKey,
+                        merchantPubKey,
+                        plan.price,
+                        network as 'testnet' | 'mainnet'
+                    );
+                    setTxHash(txResult.deployHash);
+                } else {
+                    // No valid merchant key, use demo mode
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                }
             } else {
                 // Demo mode - simulate transaction
                 await new Promise(resolve => setTimeout(resolve, 1500));

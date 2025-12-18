@@ -19,7 +19,7 @@ import {
 const SUBSCRIPTION_MANAGER_HASH = "55fb73955a3e736cd516af0956057a2c55f986d1b3a421b403294a2c288d2143";
 
 export default function MerchantPlansPage() {
-    const { isConnected, address } = useWallet();
+    const { isConnected, address, publicKey } = useWallet();
     const { plans, addPlan, updatePlan, deletePlan } = usePlans();
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
@@ -45,7 +45,8 @@ export default function MerchantPlansPage() {
             description: formData.description,
             price: parseFloat(formData.price),
             period: formData.period,
-            createdBy: address
+            createdBy: address,
+            merchantPublicKey: publicKey || undefined // Save full public key for transfers
         });
 
         resetForm();

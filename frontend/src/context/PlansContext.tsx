@@ -8,7 +8,8 @@ export interface Plan {
     description: string;
     price: number;
     period: string;
-    createdBy: string; // wallet address
+    createdBy: string; // wallet display address
+    merchantPublicKey?: string; // full public key for transfers
     createdAt: number;
     subscribers: number;
     revenue: number;
