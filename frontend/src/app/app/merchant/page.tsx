@@ -3,16 +3,17 @@
 import { DashboardLayout } from "@/components/dashboard";
 import { useWallet } from "@/context/WalletContext";
 import { usePlans } from "@/context/PlansContext";
+import { useSubscriptions } from "@/context/SubscriptionsContext";
 import {
     Users,
     CreditCard,
-    BarChart3,
     Zap,
     Plus,
     Wallet,
     Package,
     ExternalLink,
-    ArrowUpRight
+    ArrowUpRight,
+    Key
 } from "lucide-react";
 import Link from "next/link";
 
@@ -22,11 +23,16 @@ const SUBSCRIPTION_MANAGER_HASH = "55fb73955a3e736cd516af0956057a2c55f986d1b3a42
 export default function MerchantDashboard() {
     const { isConnected, address, balance, network, publicKey } = useWallet();
     const { plans } = usePlans();
+    const { subscriptions } = useSubscriptions();
 
     // Filter plans created by current wallet
     const myPlans = plans.filter(p => p.createdBy === address);
-    const totalRevenue = myPlans.reduce((sum, p) => sum + p.revenue, 0);
-    const totalSubscribers = myPlans.reduce((sum, p) => sum + p.subscribers, 0);
+    const myPlanIds = myPlans.map(p => p.id);
+
+    // Get subscriptions from my plans
+    const mySubscribers = subscriptions.filter(s => myPlanIds.includes(s.planId));
+    const activeSubscribers = mySubscribers.filter(s => s.status === 'active');
+    const totalRevenue = mySubscribers.reduce((sum, s) => sum + s.planPrice, 0);
 
     const stats = [
         {
@@ -38,7 +44,7 @@ export default function MerchantDashboard() {
         },
         {
             title: "Active Subscribers",
-            value: totalSubscribers.toString(),
+            value: activeSubscribers.length.toString(),
             subtitle: "Across all plans",
             icon: Users,
             color: "#8b5cf6",
@@ -58,6 +64,13 @@ export default function MerchantDashboard() {
             color: "#f59e0b",
         },
     ];
+
+    const formatDate = (timestamp: number) => {
+        return new Date(timestamp).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric'
+        });
+    };
 
     return (
         <DashboardLayout type="merchant">
@@ -147,15 +160,25 @@ export default function MerchantDashboard() {
                 </div>
 
                 {/* Plans Section */}
-                {myPlans.length === 0 ? (
-                    <div className="bg-[#12121a] border border-white/10 rounded-2xl p-8">
+                <div className="bg-[#12121a] border border-white/10 rounded-2xl p-6">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-lg font-semibold text-white">Your Plans</h3>
+                        <Link
+                            href="/app/merchant/plans"
+                            className="text-sm text-purple-400 hover:text-purple-300 flex items-center gap-1"
+                        >
+                            View All <ArrowUpRight className="w-4 h-4" />
+                        </Link>
+                    </div>
+
+                    {myPlans.length === 0 ? (
                         <div className="text-center py-12">
                             <div className="w-16 h-16 rounded-2xl bg-purple-500/20 flex items-center justify-center mx-auto mb-4">
                                 <Package className="w-8 h-8 text-purple-500" />
                             </div>
-                            <h3 className="text-xl font-semibold text-white mb-2">No Plans Created Yet</h3>
+                            <h4 className="text-xl font-semibold text-white mb-2">No Plans Created Yet</h4>
                             <p className="text-gray-400 mb-6 max-w-md mx-auto">
-                                Create your first subscription plan to start accepting recurring payments from customers.
+                                Create your first subscription plan to start accepting recurring payments.
                             </p>
                             <Link
                                 href="/app/merchant/plans"
@@ -165,18 +188,7 @@ export default function MerchantDashboard() {
                                 Create Your First Plan
                             </Link>
                         </div>
-                    </div>
-                ) : (
-                    <div className="bg-[#12121a] border border-white/10 rounded-2xl p-6">
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-lg font-semibold text-white">Your Plans</h3>
-                            <Link
-                                href="/app/merchant/plans"
-                                className="text-sm text-purple-400 hover:text-purple-300 flex items-center gap-1"
-                            >
-                                View All <ArrowUpRight className="w-4 h-4" />
-                            </Link>
-                        </div>
+                    ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {myPlans.slice(0, 3).map((plan) => (
                                 <div key={plan.id} className="bg-white/5 rounded-xl p-4">
@@ -191,8 +203,59 @@ export default function MerchantDashboard() {
                                 </div>
                             ))}
                         </div>
+                    )}
+                </div>
+
+                {/* Recent Subscribers */}
+                <div className="bg-[#12121a] border border-white/10 rounded-2xl p-6">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-lg font-semibold text-white">Recent Subscribers</h3>
+                        <Link
+                            href="/app/merchant/subscribers"
+                            className="text-sm text-purple-400 hover:text-purple-300 flex items-center gap-1"
+                        >
+                            View All <ArrowUpRight className="w-4 h-4" />
+                        </Link>
                     </div>
-                )}
+
+                    {mySubscribers.length === 0 ? (
+                        <div className="text-center py-8">
+                            <div className="text-gray-500">No subscribers yet</div>
+                            <div className="text-sm text-gray-600 mt-1">
+                                Subscribers will appear here when users subscribe to your plans
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="space-y-3">
+                            {mySubscribers.slice(0, 5).map((sub) => (
+                                <div key={sub.id} className="flex items-center justify-between py-3 border-b border-white/5 last:border-0">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-xs font-bold">
+                                            {sub.subscriberWallet.slice(2, 4).toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <div className="text-sm font-medium text-white">
+                                                {sub.subscriberWallet.slice(0, 8)}...{sub.subscriberWallet.slice(-4)}
+                                            </div>
+                                            <div className="text-xs text-gray-500">
+                                                {sub.planName} • {formatDate(sub.subscribedAt)}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-1 text-xs text-green-400">
+                                            <Key className="w-3 h-3" />
+                                            API Key
+                                        </div>
+                                        <div className="text-sm font-semibold text-green-400">
+                                            +{sub.planPrice} CSPR
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
 
                 {/* Contract Info */}
                 <div className="bg-[#12121a] border border-white/10 rounded-2xl p-6">

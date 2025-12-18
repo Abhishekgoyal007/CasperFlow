@@ -2,37 +2,40 @@
 
 import { DashboardLayout } from "@/components/dashboard";
 import { useWallet } from "@/context/WalletContext";
+import { useSubscriptions } from "@/context/SubscriptionsContext";
 import {
     CreditCard,
-    BarChart3,
     Zap,
     ArrowUpRight,
-    Clock,
-    CheckCircle,
     Wallet,
     Search,
     ExternalLink,
-    Package
+    Package,
+    Key,
+    Calendar,
+    CheckCircle
 } from "lucide-react";
 import Link from "next/link";
 
-// Contract deployed on testnet
-const SUBSCRIPTION_MANAGER_HASH = "55fb73955a3e736cd516af0956057a2c55f986d1b3a421b403294a2c288d2143";
-
 export default function UserDashboard() {
     const { isConnected, address, balance, network, publicKey } = useWallet();
+    const { getSubscriptionsForUser } = useSubscriptions();
 
-    // Real stats - zeros for fresh deployment
+    // Get real subscriptions
+    const mySubscriptions = getSubscriptionsForUser(address);
+    const activeSubscriptions = mySubscriptions.filter(s => s.status === 'active');
+    const monthlySpend = activeSubscriptions.reduce((sum, s) => sum + s.planPrice, 0);
+
     const stats = [
         {
             title: "Active Subscriptions",
-            value: "0",
+            value: activeSubscriptions.length.toString(),
             icon: CreditCard,
             color: "#8b5cf6",
         },
         {
             title: "This Month's Spend",
-            value: "0 CSPR",
+            value: `${monthlySpend} CSPR`,
             icon: Zap,
             color: "#10b981",
         },
@@ -44,28 +47,32 @@ export default function UserDashboard() {
         },
     ];
 
+    const formatDate = (timestamp: number) => {
+        return new Date(timestamp).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
+    };
+
     return (
         <DashboardLayout type="user">
             <div className="space-y-8">
                 {/* Testnet Banner */}
                 <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center">
-                            <Zap className="w-4 h-4 text-yellow-400" />
-                        </div>
+                        <Zap className="w-5 h-5 text-yellow-400" />
                         <div className="flex-1">
-                            <div className="text-sm font-medium text-yellow-400">Testnet Mode</div>
-                            <div className="text-xs text-gray-400">
-                                Connected to Casper Testnet • Get test CSPR from{" "}
-                                <a
-                                    href="https://testnet.cspr.live/tools/faucet"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-yellow-400 hover:underline"
-                                >
-                                    faucet
-                                </a>
-                            </div>
+                            <span className="text-sm text-yellow-400">Testnet Mode</span>
+                            <span className="text-gray-400 text-sm mx-2">•</span>
+                            <a
+                                href="https://testnet.cspr.live/tools/faucet"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-gray-400 hover:text-white"
+                            >
+                                Get test CSPR <ExternalLink className="w-3 h-3 inline" />
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -136,35 +143,71 @@ export default function UserDashboard() {
                     ))}
                 </div>
 
-                {/* Active Subscriptions - Empty State */}
+                {/* Active Subscriptions */}
                 <div className="bg-[#12121a] border border-white/10 rounded-2xl p-6">
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="text-lg font-semibold text-white">Active Subscriptions</h3>
                         <Link
-                            href="/app/user/browse"
+                            href="/app/user/subscriptions"
                             className="text-sm text-purple-500 hover:text-purple-400 flex items-center gap-1"
                         >
-                            Browse Plans
+                            View All
                             <ArrowUpRight className="w-4 h-4" />
                         </Link>
                     </div>
 
-                    <div className="text-center py-12">
-                        <div className="w-16 h-16 rounded-2xl bg-purple-500/20 flex items-center justify-center mx-auto mb-4">
-                            <Package className="w-8 h-8 text-purple-500" />
+                    {activeSubscriptions.length === 0 ? (
+                        <div className="text-center py-12">
+                            <div className="w-16 h-16 rounded-2xl bg-purple-500/20 flex items-center justify-center mx-auto mb-4">
+                                <Package className="w-8 h-8 text-purple-500" />
+                            </div>
+                            <h4 className="text-lg font-medium text-white mb-2">No Active Subscriptions</h4>
+                            <p className="text-gray-400 mb-6 max-w-md mx-auto">
+                                Browse available plans and subscribe to services using CSPR.
+                            </p>
+                            <Link
+                                href="/app/user/browse"
+                                className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-semibold py-3 px-6 rounded-xl transition-all"
+                            >
+                                <Search className="w-5 h-5" />
+                                Find Subscriptions
+                            </Link>
                         </div>
-                        <h4 className="text-lg font-medium text-white mb-2">No Active Subscriptions</h4>
-                        <p className="text-gray-400 mb-6 max-w-md mx-auto">
-                            Browse available plans and subscribe to services using CSPR.
-                        </p>
-                        <Link
-                            href="/app/user/browse"
-                            className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-semibold py-3 px-6 rounded-xl transition-all"
-                        >
-                            <Search className="w-5 h-5" />
-                            Find Subscriptions
-                        </Link>
-                    </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {activeSubscriptions.slice(0, 3).map((sub) => (
+                                <div key={sub.id} className="flex items-center justify-between p-4 bg-white/5 rounded-xl">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+                                            <CheckCircle className="w-5 h-5 text-green-400" />
+                                        </div>
+                                        <div>
+                                            <div className="font-semibold text-white">{sub.planName}</div>
+                                            <div className="text-sm text-gray-400">{sub.planPrice} CSPR/{sub.planPeriod}</div>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="flex items-center gap-1 text-xs text-gray-400">
+                                            <Calendar className="w-3 h-3" />
+                                            Expires {formatDate(sub.expiresAt)}
+                                        </div>
+                                        <div className="flex items-center gap-1 text-xs text-green-400 mt-1">
+                                            <Key className="w-3 h-3" />
+                                            API Key Active
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                            {activeSubscriptions.length > 3 && (
+                                <Link
+                                    href="/app/user/subscriptions"
+                                    className="block text-center py-2 text-sm text-purple-400 hover:text-purple-300"
+                                >
+                                    View all {activeSubscriptions.length} subscriptions →
+                                </Link>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* Payment Method */}
@@ -197,7 +240,7 @@ export default function UserDashboard() {
                     </div>
                 </div>
 
-                {/* Recent Transactions - Empty State */}
+                {/* Recent Transactions */}
                 <div className="bg-[#12121a] border border-white/10 rounded-2xl p-6">
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="text-lg font-semibold text-white">Recent Transactions</h3>
@@ -214,12 +257,39 @@ export default function UserDashboard() {
                         )}
                     </div>
 
-                    <div className="text-center py-8">
-                        <div className="text-gray-500">No subscription transactions yet</div>
-                        <div className="text-sm text-gray-600 mt-1">
-                            Your payment history will appear here
+                    {mySubscriptions.length === 0 ? (
+                        <div className="text-center py-8">
+                            <div className="text-gray-500">No subscription transactions yet</div>
+                            <div className="text-sm text-gray-600 mt-1">
+                                Your payment history will appear here
+                            </div>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="space-y-3">
+                            {mySubscriptions.slice(0, 5).map((sub) => (
+                                <div key={sub.id} className="flex items-center justify-between py-3 border-b border-white/5 last:border-0">
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${sub.status === 'active' ? 'bg-green-500/20' : 'bg-gray-500/20'
+                                            }`}>
+                                            <CreditCard className={`w-4 h-4 ${sub.status === 'active' ? 'text-green-400' : 'text-gray-400'
+                                                }`} />
+                                        </div>
+                                        <div>
+                                            <div className="text-sm font-medium text-white">
+                                                Subscribed to {sub.planName}
+                                            </div>
+                                            <div className="text-xs text-gray-500">
+                                                {formatDate(sub.subscribedAt)}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="text-sm font-semibold text-red-400">
+                                        -{sub.planPrice} CSPR
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </DashboardLayout>
