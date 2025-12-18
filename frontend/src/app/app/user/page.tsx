@@ -9,76 +9,67 @@ import {
     ArrowUpRight,
     Clock,
     CheckCircle,
-    AlertCircle,
-    Wallet
+    Wallet,
+    Search,
+    ExternalLink,
+    Package
 } from "lucide-react";
 import Link from "next/link";
 
-const activeSubscriptions = [
-    {
-        id: 1,
-        name: "Pro API Access",
-        merchant: "AI Vision Labs",
-        price: "50 CSPR/month",
-        nextBilling: "Dec 25, 2024",
-        status: "active",
-        usagePercent: 67,
-    },
-    {
-        id: 2,
-        name: "Cloud Storage Pro",
-        merchant: "CasperDrive",
-        price: "25 CSPR/month",
-        nextBilling: "Jan 1, 2025",
-        status: "active",
-        usagePercent: 34,
-    },
-    {
-        id: 3,
-        name: "Gaming Premium",
-        merchant: "CasperGames",
-        price: "10 CSPR/month",
-        nextBilling: "Dec 20, 2024",
-        status: "expiring",
-        usagePercent: 89,
-    },
-];
-
-const usageHistory = [
-    { date: "Today", calls: 1234, cost: "1.23 CSPR" },
-    { date: "Yesterday", calls: 2156, cost: "2.16 CSPR" },
-    { date: "Dec 16", calls: 1876, cost: "1.88 CSPR" },
-    { date: "Dec 15", calls: 2543, cost: "2.54 CSPR" },
-    { date: "Dec 14", calls: 1654, cost: "1.65 CSPR" },
-];
-
-const stats = [
-    {
-        title: "Active Subscriptions",
-        value: "3",
-        icon: CreditCard,
-        color: "#8b5cf6",
-    },
-    {
-        title: "This Month's Spend",
-        value: "85 CSPR",
-        icon: Zap,
-        color: "#10b981",
-    },
-    {
-        title: "API Calls Used",
-        value: "45.2K",
-        icon: BarChart3,
-        color: "#3b82f6",
-    },
-];
+// Contract deployed on testnet
+const SUBSCRIPTION_MANAGER_HASH = "55fb73955a3e736cd516af0956057a2c55f986d1b3a421b403294a2c288d2143";
 
 export default function UserDashboard() {
-    const { isConnected, address, balance, network } = useWallet();
+    const { isConnected, address, balance, network, publicKey } = useWallet();
+
+    // Real stats - zeros for fresh deployment
+    const stats = [
+        {
+            title: "Active Subscriptions",
+            value: "0",
+            icon: CreditCard,
+            color: "#8b5cf6",
+        },
+        {
+            title: "This Month's Spend",
+            value: "0 CSPR",
+            icon: Zap,
+            color: "#10b981",
+        },
+        {
+            title: "Wallet Balance",
+            value: isConnected ? `${balance} CSPR` : "-- CSPR",
+            icon: Wallet,
+            color: "#3b82f6",
+        },
+    ];
 
     return (
         <DashboardLayout type="user">
             <div className="space-y-8">
+                {/* Testnet Banner */}
+                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center">
+                            <Zap className="w-4 h-4 text-yellow-400" />
+                        </div>
+                        <div className="flex-1">
+                            <div className="text-sm font-medium text-yellow-400">Testnet Mode</div>
+                            <div className="text-xs text-gray-400">
+                                Connected to Casper Testnet • Get test CSPR from{" "}
+                                <a
+                                    href="https://testnet.cspr.live/tools/faucet"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-yellow-400 hover:underline"
+                                >
+                                    faucet
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Wallet Status Banner */}
                 {isConnected && (
                     <div className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-xl p-4">
@@ -94,7 +85,14 @@ export default function UserDashboard() {
                             </div>
                             <div className="text-right">
                                 <div className="text-lg font-bold text-purple-400">{balance} CSPR</div>
-                                <div className="text-xs text-gray-500 capitalize">{network}</div>
+                                <a
+                                    href={`https://${network === 'testnet' ? 'testnet.' : ''}cspr.live/account/${publicKey}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs text-gray-500 hover:text-gray-300 capitalize flex items-center gap-1 justify-end"
+                                >
+                                    {network} <ExternalLink className="w-3 h-3" />
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -107,10 +105,10 @@ export default function UserDashboard() {
                         <p className="text-gray-400 mt-1">Manage your subscriptions and track usage.</p>
                     </div>
                     <Link
-                        href="/app/user/subscriptions"
+                        href="/app/user/browse"
                         className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-semibold py-3 px-6 rounded-xl transition-all hover:scale-105"
                     >
-                        <Zap className="w-5 h-5" />
+                        <Search className="w-5 h-5" />
                         Browse Plans
                     </Link>
                 </div>
@@ -138,104 +136,34 @@ export default function UserDashboard() {
                     ))}
                 </div>
 
-                {/* Active Subscriptions */}
+                {/* Active Subscriptions - Empty State */}
                 <div className="bg-[#12121a] border border-white/10 rounded-2xl p-6">
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="text-lg font-semibold text-white">Active Subscriptions</h3>
-                        <button className="text-sm text-red-500 hover:text-red-400 flex items-center gap-1">
+                        <Link
+                            href="/app/user/browse"
+                            className="text-sm text-purple-500 hover:text-purple-400 flex items-center gap-1"
+                        >
                             Browse Plans
                             <ArrowUpRight className="w-4 h-4" />
-                        </button>
+                        </Link>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {activeSubscriptions.map((sub) => (
-                            <div
-                                key={sub.id}
-                                className="bg-white/5 border border-white/10 rounded-xl p-5 hover:border-white/20 transition-all"
-                            >
-                                <div className="flex items-start justify-between mb-4">
-                                    <div>
-                                        <h4 className="font-semibold text-white mb-1">{sub.name}</h4>
-                                        <p className="text-sm text-gray-500">{sub.merchant}</p>
-                                    </div>
-                                    {sub.status === "active" ? (
-                                        <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/20 text-green-400 text-xs">
-                                            <CheckCircle className="w-3 h-3" />
-                                            Active
-                                        </span>
-                                    ) : (
-                                        <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-yellow-500/20 text-yellow-400 text-xs">
-                                            <AlertCircle className="w-3 h-3" />
-                                            Expiring
-                                        </span>
-                                    )}
-                                </div>
-
-                                <div className="space-y-3">
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-gray-500">Price</span>
-                                        <span className="text-white font-medium">{sub.price}</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-gray-500">Next billing</span>
-                                        <span className="text-white flex items-center gap-1">
-                                            <Clock className="w-3 h-3 text-gray-500" />
-                                            {sub.nextBilling}
-                                        </span>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <div className="flex justify-between text-sm">
-                                            <span className="text-gray-500">Usage</span>
-                                            <span className="text-white">{sub.usagePercent}%</span>
-                                        </div>
-                                        <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                                            <div
-                                                className={`h-full rounded-full transition-all ${sub.usagePercent > 80 ? "bg-red-500" : "bg-gradient-to-r from-purple-500 to-blue-500"
-                                                    }`}
-                                                style={{ width: `${sub.usagePercent}%` }}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <button className="w-full mt-4 py-2 px-4 rounded-lg bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white transition-all text-sm">
-                                    Manage
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Usage History */}
-                <div className="bg-[#12121a] border border-white/10 rounded-2xl p-6">
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-lg font-semibold text-white">Recent Usage</h3>
-                        <button className="text-sm text-red-500 hover:text-red-400 flex items-center gap-1">
-                            View Details
-                            <ArrowUpRight className="w-4 h-4" />
-                        </button>
-                    </div>
-
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead>
-                                <tr className="border-b border-white/10">
-                                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">Date</th>
-                                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">API Calls</th>
-                                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">Cost</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {usageHistory.map((row, index) => (
-                                    <tr key={index} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                                        <td className="py-4 px-4 text-white">{row.date}</td>
-                                        <td className="py-4 px-4 text-white font-mono">{row.calls.toLocaleString()}</td>
-                                        <td className="py-4 px-4 text-green-400">{row.cost}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                    <div className="text-center py-12">
+                        <div className="w-16 h-16 rounded-2xl bg-purple-500/20 flex items-center justify-center mx-auto mb-4">
+                            <Package className="w-8 h-8 text-purple-500" />
+                        </div>
+                        <h4 className="text-lg font-medium text-white mb-2">No Active Subscriptions</h4>
+                        <p className="text-gray-400 mb-6 max-w-md mx-auto">
+                            Browse available plans and subscribe to services using CSPR.
+                        </p>
+                        <Link
+                            href="/app/user/browse"
+                            className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-semibold py-3 px-6 rounded-xl transition-all"
+                        >
+                            <Search className="w-5 h-5" />
+                            Find Subscriptions
+                        </Link>
                     </div>
                 </div>
 
@@ -249,12 +177,12 @@ export default function UserDashboard() {
                             </div>
                             <div>
                                 <div className="font-semibold text-white">
-                                    {isConnected ? "Stake-to-Pay Enabled" : "Connect Wallet to Enable"}
+                                    {isConnected ? "Wallet Connected" : "Connect Wallet"}
                                 </div>
                                 <div className="text-sm text-gray-400">
                                     {isConnected
-                                        ? "Pay subscriptions from staking rewards"
-                                        : "Connect your wallet to enable payments"}
+                                        ? "Pay subscriptions directly with CSPR"
+                                        : "Connect your Casper Wallet to pay"}
                                 </div>
                             </div>
                         </div>
@@ -263,8 +191,33 @@ export default function UserDashboard() {
                                 {isConnected ? `${balance} CSPR` : "-- CSPR"}
                             </div>
                             <div className="text-xs text-gray-500">
-                                {isConnected ? "Wallet Balance" : "Not connected"}
+                                {isConnected ? "Available" : "Not connected"}
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Recent Transactions - Empty State */}
+                <div className="bg-[#12121a] border border-white/10 rounded-2xl p-6">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-lg font-semibold text-white">Recent Transactions</h3>
+                        {isConnected && publicKey && (
+                            <a
+                                href={`https://${network === 'testnet' ? 'testnet.' : ''}cspr.live/account/${publicKey}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-gray-400 hover:text-white flex items-center gap-1"
+                            >
+                                View on Explorer
+                                <ExternalLink className="w-3 h-3" />
+                            </a>
+                        )}
+                    </div>
+
+                    <div className="text-center py-8">
+                        <div className="text-gray-500">No subscription transactions yet</div>
+                        <div className="text-sm text-gray-600 mt-1">
+                            Your payment history will appear here
                         </div>
                     </div>
                 </div>
