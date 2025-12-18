@@ -5,6 +5,7 @@ import { WalletProvider } from "@/context/WalletContext";
 import { PlansProvider } from "@/context/PlansContext";
 import { NotificationsProvider } from "@/context/NotificationsContext";
 import { SubscriptionsProvider } from "@/context/SubscriptionsContext";
+import { ToastProvider } from "@/components/ui/Toast";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -55,7 +56,9 @@ export default function RootLayout({
           <NotificationsProvider>
             <SubscriptionsProvider>
               <PlansProvider>
-                {children}
+                <ToastProvider>
+                  {children}
+                </ToastProvider>
               </PlansProvider>
             </SubscriptionsProvider>
           </NotificationsProvider>
