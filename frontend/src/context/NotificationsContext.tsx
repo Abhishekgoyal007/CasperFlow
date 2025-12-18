@@ -47,7 +47,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     const addNotification = (notif: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
         const newNotif: Notification = {
             ...notif,
-            id: `notif_${Date.now()}`,
+            id: `notif_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
             timestamp: Date.now(),
             read: false,
         };
