@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { WalletProvider } from "@/context/WalletContext";
 import { PlansProvider } from "@/context/PlansContext";
+import { NotificationsProvider } from "@/context/NotificationsContext";
+import { SubscriptionsProvider } from "@/context/SubscriptionsContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -50,9 +52,13 @@ export default function RootLayout({
     <html lang="en" className={`dark ${inter.variable}`}>
       <body className={`${inter.className} antialiased`}>
         <WalletProvider>
-          <PlansProvider>
-            {children}
-          </PlansProvider>
+          <NotificationsProvider>
+            <SubscriptionsProvider>
+              <PlansProvider>
+                {children}
+              </PlansProvider>
+            </SubscriptionsProvider>
+          </NotificationsProvider>
         </WalletProvider>
       </body>
     </html>

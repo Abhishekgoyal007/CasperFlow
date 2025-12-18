@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -12,12 +12,14 @@ import {
     FileText,
     Settings,
     Bell,
-    ChevronDown,
-    LogOut,
     Menu,
-    X
+    X,
+    Check,
+    Trash2
 } from "lucide-react";
 import { ConnectWalletButton } from "@/components/wallet";
+import { useNotifications } from "@/context/NotificationsContext";
+import { useWallet } from "@/context/WalletContext";
 
 const merchantNavItems = [
     { name: "Overview", href: "/app/merchant", icon: LayoutDashboard },
@@ -44,7 +46,34 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children, type }: DashboardLayoutProps) {
     const pathname = usePathname();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [notifOpen, setNotifOpen] = useState(false);
+    const notifRef = useRef<HTMLDivElement>(null);
     const navItems = type === "merchant" ? merchantNavItems : userNavItems;
+
+    const { address } = useWallet();
+    const { getNotificationsForWallet, markAsRead, markAllAsRead, clearAll } = useNotifications();
+
+    const myNotifications = getNotificationsForWallet(address);
+    const unreadCount = myNotifications.filter(n => !n.read).length;
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+                setNotifOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const formatTime = (timestamp: number) => {
+        const diff = Date.now() - timestamp;
+        if (diff < 60000) return 'Just now';
+        if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+        if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+        return `${Math.floor(diff / 86400000)}d ago`;
+    };
 
     return (
         <div className="min-h-screen bg-[#0a0a0f]">
@@ -58,11 +87,11 @@ export function DashboardLayout({ children, type }: DashboardLayoutProps) {
 
             {/* Sidebar */}
             <aside className={`
-        fixed top-0 left-0 z-50 h-full w-72 bg-[#0d0d14] border-r border-white/10
-        transform transition-transform duration-300 ease-in-out
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-        lg:translate-x-0
-      `}>
+                fixed top-0 left-0 z-50 h-full w-72 bg-[#0d0d14] border-r border-white/10
+                transform transition-transform duration-300 ease-in-out
+                ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+                lg:translate-x-0
+            `}>
                 {/* Logo */}
                 <div className="h-20 flex items-center justify-between px-6 border-b border-white/10">
                     <Link href="/" className="flex items-center gap-3">
@@ -84,12 +113,12 @@ export function DashboardLayout({ children, type }: DashboardLayoutProps) {
                 {/* Role Badge */}
                 <div className="px-6 py-4">
                     <div className={`
-            inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold
-            ${type === "merchant"
+                        inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold
+                        ${type === "merchant"
                             ? "bg-purple-500/20 text-purple-400"
                             : "bg-green-500/20 text-green-400"
                         }
-          `}>
+                    `}>
                         {type === "merchant" ? "Merchant Dashboard" : "User Dashboard"}
                     </div>
                 </div>
@@ -104,12 +133,12 @@ export function DashboardLayout({ children, type }: DashboardLayoutProps) {
                                     <Link
                                         href={item.href}
                                         className={`
-                      flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all
-                      ${isActive
+                                            flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all
+                                            ${isActive
                                                 ? "bg-white/10 text-white"
                                                 : "text-gray-400 hover:text-white hover:bg-white/5"
                                             }
-                    `}
+                                        `}
                                     >
                                         <item.icon className={`w-5 h-5 ${isActive ? "text-red-500" : ""}`} />
                                         {item.name}
@@ -146,10 +175,72 @@ export function DashboardLayout({ children, type }: DashboardLayoutProps) {
 
                     <div className="flex items-center gap-4">
                         {/* Notifications */}
-                        <button className="relative p-2 text-gray-400 hover:text-white transition-colors">
-                            <Bell className="w-5 h-5" />
-                            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
-                        </button>
+                        <div className="relative" ref={notifRef}>
+                            <button
+                                onClick={() => setNotifOpen(!notifOpen)}
+                                className="relative p-2 text-gray-400 hover:text-white transition-colors"
+                            >
+                                <Bell className="w-5 h-5" />
+                                {unreadCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-[10px] font-bold text-white flex items-center justify-center">
+                                        {unreadCount > 9 ? '9+' : unreadCount}
+                                    </span>
+                                )}
+                            </button>
+
+                            {/* Notifications Dropdown */}
+                            {notifOpen && (
+                                <div className="absolute right-0 top-12 w-80 bg-[#12121a] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden">
+                                    <div className="flex items-center justify-between p-4 border-b border-white/10">
+                                        <h3 className="font-semibold text-white">Notifications</h3>
+                                        {myNotifications.length > 0 && (
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={markAllAsRead}
+                                                    className="text-xs text-gray-400 hover:text-white"
+                                                >
+                                                    Mark all read
+                                                </button>
+                                                <button
+                                                    onClick={clearAll}
+                                                    className="text-xs text-red-400 hover:text-red-300"
+                                                >
+                                                    Clear all
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="max-h-80 overflow-y-auto">
+                                        {myNotifications.length === 0 ? (
+                                            <div className="p-8 text-center text-gray-500">
+                                                <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                                                <p className="text-sm">No notifications</p>
+                                            </div>
+                                        ) : (
+                                            myNotifications.slice(0, 10).map((notif) => (
+                                                <div
+                                                    key={notif.id}
+                                                    onClick={() => markAsRead(notif.id)}
+                                                    className={`p-4 border-b border-white/5 hover:bg-white/5 cursor-pointer transition-colors ${!notif.read ? 'bg-purple-500/5' : ''
+                                                        }`}
+                                                >
+                                                    <div className="flex items-start gap-3">
+                                                        <div className={`w-2 h-2 rounded-full mt-2 ${notif.read ? 'bg-gray-600' : 'bg-purple-500'
+                                                            }`} />
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="font-medium text-sm text-white">{notif.title}</div>
+                                                            <div className="text-xs text-gray-400 mt-1 truncate">{notif.message}</div>
+                                                            <div className="text-[10px] text-gray-600 mt-1">{formatTime(notif.timestamp)}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
 
                         {/* Wallet Connection */}
                         <div className="pl-4 border-l border-white/10">
