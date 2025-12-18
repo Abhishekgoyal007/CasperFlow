@@ -3,7 +3,7 @@
 import { DashboardLayout } from "@/components/dashboard";
 import { useWallet } from "@/context/WalletContext";
 import { usePlans } from "@/context/PlansContext";
-import { useSubscriptions } from "@/context/SubscriptionsContext";
+import { useSubscriptions, Subscription } from "@/context/SubscriptionsContext";
 import { useNotifications } from "@/context/NotificationsContext";
 import {
     Package,
@@ -11,7 +11,10 @@ import {
     Search,
     Check,
     Users,
-    CheckCircle
+    CheckCircle,
+    Key,
+    Copy,
+    X
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -19,9 +22,11 @@ import { useState } from "react";
 export default function UserBrowsePage() {
     const { isConnected, address } = useWallet();
     const { plans, incrementSubscribers } = usePlans();
-    const { subscribe, isSubscribed } = useSubscriptions();
+    const { subscribe, isSubscribed, getSubscription } = useSubscriptions();
     const { addNotification } = useNotifications();
     const [subscribingTo, setSubscribingTo] = useState<string | null>(null);
+    const [newSubscription, setNewSubscription] = useState<Subscription | null>(null);
+    const [copied, setCopied] = useState(false);
 
     const handleSubscribe = async (plan: typeof plans[0]) => {
         if (!isConnected || !address) return;
@@ -32,8 +37,8 @@ export default function UserBrowsePage() {
         // Simulate transaction delay
         await new Promise(resolve => setTimeout(resolve, 1500));
 
-        // Subscribe the user
-        subscribe(
+        // Subscribe the user and get the new subscription with API key
+        const sub = subscribe(
             plan.id,
             plan.name,
             plan.price,
@@ -57,11 +62,20 @@ export default function UserBrowsePage() {
         addNotification({
             type: 'subscription',
             title: 'Subscription Active!',
-            message: `You subscribed to "${plan.name}" for ${plan.price} CSPR/${plan.period}`,
+            message: `You subscribed to "${plan.name}". Your API Key: ${sub.apiKey.slice(0, 12)}...`,
             forWallet: address
         });
 
         setSubscribingTo(null);
+        setNewSubscription(sub); // Show the API key modal
+    };
+
+    const copyApiKey = () => {
+        if (newSubscription) {
+            navigator.clipboard.writeText(newSubscription.apiKey);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }
     };
 
     return (
@@ -107,6 +121,7 @@ export default function UserBrowsePage() {
                         {plans.map((plan) => {
                             const alreadySubscribed = isSubscribed(plan.id, address);
                             const isLoading = subscribingTo === plan.id;
+                            const existingSub = getSubscription(plan.id, address);
 
                             return (
                                 <div
@@ -139,14 +154,29 @@ export default function UserBrowsePage() {
                                         {plan.subscribers} subscribers
                                     </div>
 
-                                    {alreadySubscribed ? (
-                                        <button
-                                            disabled
-                                            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-green-500/20 text-green-400 font-semibold cursor-default"
-                                        >
-                                            <CheckCircle className="w-5 h-5" />
-                                            Active Subscription
-                                        </button>
+                                    {alreadySubscribed && existingSub ? (
+                                        <div className="space-y-3">
+                                            <div className="bg-green-500/10 rounded-xl p-3">
+                                                <div className="flex items-center gap-2 text-xs text-green-400 mb-1">
+                                                    <Key className="w-3 h-3" />
+                                                    Your API Key
+                                                </div>
+                                                <div className="font-mono text-xs text-white bg-black/30 rounded px-2 py-1 truncate">
+                                                    {existingSub.apiKey}
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(existingSub.apiKey);
+                                                    setCopied(true);
+                                                    setTimeout(() => setCopied(false), 2000);
+                                                }}
+                                                className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white transition-all text-sm"
+                                            >
+                                                <Copy className="w-4 h-4" />
+                                                {copied ? 'Copied!' : 'Copy API Key'}
+                                            </button>
+                                        </div>
                                     ) : (
                                         <button
                                             onClick={() => handleSubscribe(plan)}
@@ -179,10 +209,63 @@ export default function UserBrowsePage() {
                     <div className="flex items-center gap-3">
                         <Zap className="w-5 h-5 text-yellow-400" />
                         <div className="text-sm text-gray-400">
-                            <span className="text-yellow-400">Testnet Demo:</span> Subscriptions are stored locally. In production, payments would go on-chain.
+                            <span className="text-yellow-400">Testnet Demo:</span> After subscribing, you'll receive an API key to access the merchant's service.
                         </div>
                     </div>
                 </div>
+
+                {/* API Key Success Modal */}
+                {newSubscription && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setNewSubscription(null)} />
+                        <div className="relative bg-[#12121a] border border-green-500/30 rounded-2xl p-8 max-w-md w-full">
+                            <button
+                                onClick={() => setNewSubscription(null)}
+                                className="absolute top-4 right-4 text-gray-400 hover:text-white"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+
+                            <div className="text-center mb-6">
+                                <div className="w-16 h-16 rounded-2xl bg-green-500/20 flex items-center justify-center mx-auto mb-4">
+                                    <CheckCircle className="w-10 h-10 text-green-400" />
+                                </div>
+                                <h2 className="text-2xl font-bold text-white">Subscription Active!</h2>
+                                <p className="text-gray-400 mt-2">
+                                    You've subscribed to <span className="text-white font-semibold">{newSubscription.planName}</span>
+                                </p>
+                            </div>
+
+                            <div className="bg-black/30 rounded-xl p-4 mb-6">
+                                <div className="flex items-center gap-2 text-sm text-green-400 mb-2">
+                                    <Key className="w-4 h-4" />
+                                    Your API Key
+                                </div>
+                                <div className="font-mono text-sm text-white bg-black/50 rounded-lg p-3 break-all">
+                                    {newSubscription.apiKey}
+                                </div>
+                                <p className="text-xs text-gray-500 mt-2">
+                                    ⚠️ Save this key! You'll need it to access the merchant's API.
+                                </p>
+                            </div>
+
+                            <button
+                                onClick={copyApiKey}
+                                className="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold transition-all"
+                            >
+                                <Copy className="w-5 h-5" />
+                                {copied ? 'Copied to Clipboard!' : 'Copy API Key'}
+                            </button>
+
+                            <Link
+                                href="/app/user/subscriptions"
+                                className="block text-center text-sm text-gray-400 hover:text-white mt-4"
+                            >
+                                View all your subscriptions →
+                            </Link>
+                        </div>
+                    </div>
+                )}
             </div>
         </DashboardLayout>
     );

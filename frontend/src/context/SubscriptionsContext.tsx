@@ -2,6 +2,17 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
+// Generate a random API key
+const generateApiKey = () => {
+    const prefix = 'cf_sk_';
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    let key = prefix;
+    for (let i = 0; i < 32; i++) {
+        key += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return key;
+};
+
 export interface Subscription {
     id: string;
     planId: string;
@@ -13,14 +24,17 @@ export interface Subscription {
     subscribedAt: number;
     expiresAt: number;
     status: 'active' | 'expired' | 'cancelled';
+    apiKey: string; // API key for this subscription
 }
 
 interface SubscriptionsContextType {
     subscriptions: Subscription[];
-    subscribe: (planId: string, planName: string, planPrice: number, planPeriod: string, merchantWallet: string, subscriberWallet: string) => void;
+    subscribe: (planId: string, planName: string, planPrice: number, planPeriod: string, merchantWallet: string, subscriberWallet: string) => Subscription;
     cancelSubscription: (id: string) => void;
     getSubscriptionsForUser: (wallet: string | null) => Subscription[];
+    getSubscriptionsForMerchant: (wallet: string | null) => Subscription[];
     isSubscribed: (planId: string, wallet: string | null) => boolean;
+    getSubscription: (planId: string, wallet: string | null) => Subscription | undefined;
 }
 
 const SubscriptionsContext = createContext<SubscriptionsContextType | undefined>(undefined);
@@ -52,7 +66,7 @@ export function SubscriptionsProvider({ children }: { children: ReactNode }) {
         planPeriod: string,
         merchantWallet: string,
         subscriberWallet: string
-    ) => {
+    ): Subscription => {
         // Calculate expiry based on period
         const now = Date.now();
         let expiresAt = now;
@@ -69,7 +83,7 @@ export function SubscriptionsProvider({ children }: { children: ReactNode }) {
         }
 
         const newSub: Subscription = {
-            id: `sub_${Date.now()}`,
+            id: `sub_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
             planId,
             planName,
             planPrice,
@@ -79,8 +93,10 @@ export function SubscriptionsProvider({ children }: { children: ReactNode }) {
             subscribedAt: now,
             expiresAt,
             status: 'active',
+            apiKey: generateApiKey(),
         };
         setSubscriptions(prev => [...prev, newSub]);
+        return newSub;
     };
 
     const cancelSubscription = (id: string) => {
@@ -92,9 +108,23 @@ export function SubscriptionsProvider({ children }: { children: ReactNode }) {
         return subscriptions.filter(s => s.subscriberWallet === wallet);
     };
 
+    const getSubscriptionsForMerchant = (wallet: string | null) => {
+        if (!wallet) return [];
+        return subscriptions.filter(s => s.merchantWallet === wallet);
+    };
+
     const isSubscribed = (planId: string, wallet: string | null) => {
         if (!wallet) return false;
         return subscriptions.some(s =>
+            s.planId === planId &&
+            s.subscriberWallet === wallet &&
+            s.status === 'active'
+        );
+    };
+
+    const getSubscription = (planId: string, wallet: string | null) => {
+        if (!wallet) return undefined;
+        return subscriptions.find(s =>
             s.planId === planId &&
             s.subscriberWallet === wallet &&
             s.status === 'active'
@@ -107,7 +137,9 @@ export function SubscriptionsProvider({ children }: { children: ReactNode }) {
             subscribe,
             cancelSubscription,
             getSubscriptionsForUser,
-            isSubscribed
+            getSubscriptionsForMerchant,
+            isSubscribed,
+            getSubscription
         }}>
             {children}
         </SubscriptionsContext.Provider>

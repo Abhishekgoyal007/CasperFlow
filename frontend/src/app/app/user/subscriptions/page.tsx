@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { DashboardLayout } from "@/components/dashboard";
 import { useWallet } from "@/context/WalletContext";
 import { useSubscriptions } from "@/context/SubscriptionsContext";
@@ -9,13 +10,19 @@ import {
     Search,
     Calendar,
     XCircle,
-    CheckCircle
+    CheckCircle,
+    Key,
+    Copy,
+    Eye,
+    EyeOff
 } from "lucide-react";
 import Link from "next/link";
 
 export default function UserSubscriptionsPage() {
     const { isConnected, address } = useWallet();
     const { getSubscriptionsForUser, cancelSubscription } = useSubscriptions();
+    const [copiedId, setCopiedId] = useState<string | null>(null);
+    const [showKeyId, setShowKeyId] = useState<string | null>(null);
 
     const mySubscriptions = getSubscriptionsForUser(address);
     const activeSubscriptions = mySubscriptions.filter(s => s.status === 'active');
@@ -28,6 +35,12 @@ export default function UserSubscriptionsPage() {
         });
     };
 
+    const copyApiKey = (id: string, apiKey: string) => {
+        navigator.clipboard.writeText(apiKey);
+        setCopiedId(id);
+        setTimeout(() => setCopiedId(null), 2000);
+    };
+
     return (
         <DashboardLayout type="user">
             <div className="space-y-8">
@@ -35,7 +48,7 @@ export default function UserSubscriptionsPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                         <h1 className="text-3xl font-bold text-white">My Subscriptions</h1>
-                        <p className="text-gray-400 mt-1">Manage your active subscriptions.</p>
+                        <p className="text-gray-400 mt-1">Manage your active subscriptions and API keys.</p>
                     </div>
                     <Link
                         href="/app/user/browse"
@@ -59,8 +72,8 @@ export default function UserSubscriptionsPage() {
                         <div className="text-sm text-gray-500">Monthly Spend</div>
                     </div>
                     <div className="bg-[#12121a] border border-white/10 rounded-2xl p-6">
-                        <div className="text-2xl font-bold text-purple-400">{mySubscriptions.length}</div>
-                        <div className="text-sm text-gray-500">Total Subscriptions</div>
+                        <div className="text-2xl font-bold text-purple-400">{activeSubscriptions.length}</div>
+                        <div className="text-sm text-gray-500">Active API Keys</div>
                     </div>
                 </div>
 
@@ -98,7 +111,7 @@ export default function UserSubscriptionsPage() {
                                         : 'border-white/10 opacity-60'
                                     }`}
                             >
-                                <div className="flex items-center justify-between">
+                                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                                     <div className="flex items-center gap-4">
                                         <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${sub.status === 'active'
                                                 ? 'bg-green-500/20'
@@ -118,7 +131,7 @@ export default function UserSubscriptionsPage() {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-6">
+                                    <div className="flex items-center gap-4">
                                         <div className="text-right">
                                             <div className="flex items-center gap-2 text-sm text-gray-400">
                                                 <Calendar className="w-4 h-4" />
@@ -139,6 +152,36 @@ export default function UserSubscriptionsPage() {
                                         )}
                                     </div>
                                 </div>
+
+                                {/* API Key Section */}
+                                {sub.status === 'active' && sub.apiKey && (
+                                    <div className="mt-4 pt-4 border-t border-white/10">
+                                        <div className="flex items-center gap-2 text-sm text-green-400 mb-2">
+                                            <Key className="w-4 h-4" />
+                                            API Key
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex-1 font-mono text-sm text-white bg-black/30 rounded-lg px-3 py-2">
+                                                {showKeyId === sub.id ? sub.apiKey : `${sub.apiKey.slice(0, 12)}${'•'.repeat(20)}`}
+                                            </div>
+                                            <button
+                                                onClick={() => setShowKeyId(showKeyId === sub.id ? null : sub.id)}
+                                                className="p-2 rounded-lg bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white transition-colors"
+                                            >
+                                                {showKeyId === sub.id ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                            </button>
+                                            <button
+                                                onClick={() => copyApiKey(sub.id, sub.apiKey)}
+                                                className="p-2 rounded-lg bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white transition-colors"
+                                            >
+                                                <Copy className="w-4 h-4" />
+                                            </button>
+                                            {copiedId === sub.id && (
+                                                <span className="text-xs text-green-400">Copied!</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>
@@ -149,7 +192,7 @@ export default function UserSubscriptionsPage() {
                     <div className="flex items-center gap-3">
                         <Zap className="w-5 h-5 text-yellow-400" />
                         <div className="text-sm text-gray-400">
-                            <span className="text-yellow-400">Testnet Demo:</span> Subscriptions are managed via the SubscriptionManager contract on Casper testnet.
+                            <span className="text-yellow-400">Pro Tip:</span> Keep your API keys secure. Use them to authenticate with the merchant's service.
                         </div>
                     </div>
                 </div>
