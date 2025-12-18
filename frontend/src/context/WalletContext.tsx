@@ -25,23 +25,43 @@ interface WalletProviderProps {
     children: ReactNode;
 }
 
-// Declare window type for Casper Wallet
-declare global {
-    interface Window {
-        CasperWalletProvider?: () => {
-            requestConnection: () => Promise<boolean>;
-            isConnected: () => Promise<boolean>;
-            getActivePublicKey: () => Promise<string>;
-            disconnectFromSite: () => Promise<void>;
-            signMessage: (message: string, signingPublicKeyHex: string) => Promise<string>;
-        };
-        casperlabsHelper?: {
-            requestConnection: () => Promise<void>;
-            isConnected: () => Promise<boolean>;
-            getActivePublicKey: () => Promise<string>;
-            disconnectFromSite: () => Promise<void>;
-        };
+// Type for Casper Wallet Provider
+interface CasperWalletProviderType {
+    requestConnection: () => Promise<boolean>;
+    isConnected: () => Promise<boolean>;
+    getActivePublicKey: () => Promise<string>;
+    disconnectFromSite: () => Promise<void>;
+    signMessage: (message: string, signingPublicKeyHex: string) => Promise<string>;
+}
+
+// Type for legacy Casper Signer
+interface LegacySignerType {
+    requestConnection: () => Promise<void>;
+    isConnected: () => Promise<boolean>;
+    getActivePublicKey: () => Promise<string>;
+    disconnectFromSite: () => Promise<void>;
+}
+
+// Check if window has CasperWalletProvider
+function getCasperWalletProvider(): CasperWalletProviderType | null {
+    if (typeof window === "undefined") return null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const provider = (window as any).CasperWalletProvider;
+    if (provider) {
+        return provider() as CasperWalletProviderType;
     }
+    return null;
+}
+
+// Check if window has legacy casperLabsHelper
+function getLegacySigner(): LegacySignerType | null {
+    if (typeof window === "undefined") return null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const helper = (window as any).casperlabsHelper;
+    if (helper) {
+        return helper as LegacySignerType;
+    }
+    return null;
 }
 
 export function WalletProvider({ children }: WalletProviderProps) {
@@ -53,19 +73,19 @@ export function WalletProvider({ children }: WalletProviderProps) {
     const [network, setNetwork] = useState<"mainnet" | "testnet">("testnet");
 
     // Check which wallet is available
-    const getWalletProvider = useCallback(() => {
-        if (typeof window === "undefined") return null;
-
+    const getWalletProvider = useCallback((): { type: string; provider: CasperWalletProviderType | LegacySignerType } | null => {
         // Check for new Casper Wallet
-        if (window.CasperWalletProvider) {
+        const casperWallet = getCasperWalletProvider();
+        if (casperWallet) {
             console.log("Found CasperWalletProvider");
-            return { type: "casper-wallet", provider: window.CasperWalletProvider() };
+            return { type: "casper-wallet", provider: casperWallet };
         }
 
         // Check for Casper Signer (legacy)
-        if (window.casperlabsHelper) {
+        const legacySigner = getLegacySigner();
+        if (legacySigner) {
             console.log("Found casperlabsHelper (Casper Signer)");
-            return { type: "casper-signer", provider: window.casperlabsHelper };
+            return { type: "casper-signer", provider: legacySigner };
         }
 
         return null;
@@ -133,12 +153,13 @@ export function WalletProvider({ children }: WalletProviderProps) {
 
             if (type === "casper-wallet") {
                 // New Casper Wallet
+                const casperProvider = provider as CasperWalletProviderType;
                 try {
-                    const connected = await provider.requestConnection();
+                    const connected = await casperProvider.requestConnection();
                     console.log("Connection result:", connected);
 
                     if (connected) {
-                        const activeKey = await provider.getActivePublicKey();
+                        const activeKey = await casperProvider.getActivePublicKey();
                         console.log("Active public key:", activeKey);
 
                         if (activeKey) {
@@ -160,11 +181,12 @@ export function WalletProvider({ children }: WalletProviderProps) {
                 }
             } else if (type === "casper-signer") {
                 // Legacy Casper Signer
-                await provider.requestConnection();
-                const isConn = await provider.isConnected();
+                const legacyProvider = provider as LegacySignerType;
+                await legacyProvider.requestConnection();
+                const isConn = await legacyProvider.isConnected();
 
                 if (isConn) {
-                    const activeKey = await provider.getActivePublicKey();
+                    const activeKey = await legacyProvider.getActivePublicKey();
 
                     if (activeKey) {
                         const shortAddress = activeKey.slice(0, 8) + "..." + activeKey.slice(-6);
