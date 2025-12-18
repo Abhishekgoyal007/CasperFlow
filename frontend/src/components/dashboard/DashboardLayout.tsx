@@ -15,7 +15,9 @@ import {
     Menu,
     X,
     Check,
-    Trash2
+    Trash2,
+    Coins,
+    Package
 } from "lucide-react";
 import { ConnectWalletButton } from "@/components/wallet";
 import { useNotifications } from "@/context/NotificationsContext";
@@ -32,7 +34,9 @@ const merchantNavItems = [
 
 const userNavItems = [
     { name: "Overview", href: "/app/user", icon: LayoutDashboard },
-    { name: "Subscriptions", href: "/app/user/subscriptions", icon: CreditCard },
+    { name: "Browse Plans", href: "/app/user/browse", icon: Package },
+    { name: "My Subscriptions", href: "/app/user/subscriptions", icon: CreditCard },
+    { name: "Stake-to-Pay", href: "/app/user/stake", icon: Coins },
     { name: "Usage", href: "/app/user/usage", icon: BarChart3 },
     { name: "Invoices", href: "/app/user/invoices", icon: FileText },
     { name: "Settings", href: "/app/user/settings", icon: Settings },

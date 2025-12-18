@@ -8,6 +8,9 @@ fqn = "flipper::Flipper"
 [[contracts]]
 fqn = "subscription_manager::SubscriptionManager"
 
+[[contracts]]
+fqn = "stake_to_pay::StakeToPay"
+
 # Network configurations
 [networks.testnet]
 node_address = "https://node.testnet.casper.network"

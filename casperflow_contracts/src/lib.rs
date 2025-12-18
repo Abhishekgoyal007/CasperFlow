@@ -4,3 +4,5 @@ extern crate alloc;
 
 pub mod flipper;
 pub mod subscription_manager;
+pub mod stake_to_pay;
+

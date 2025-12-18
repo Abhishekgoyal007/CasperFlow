@@ -7,12 +7,18 @@ use odra::casper_types::U512;
 pub struct SubscriptionManager {
     /// Contract owner
     owner: Var<Address>,
-    /// Subscription plans: plan_id -> (price_in_motes, period_in_seconds)
+    /// Subscription plans: plan_id -> price in motes
     plan_prices: Mapping<u32, U512>,
+    /// Subscription plans: plan_id -> period in seconds
     plan_periods: Mapping<u32, u64>,
+    /// Subscription plans: plan_id -> name
     plan_names: Mapping<u32, String>,
+    /// Subscription plans: plan_id -> merchant address
+    plan_merchants: Mapping<u32, Address>,
     /// Active subscriptions: (subscriber, plan_id) -> expiry_timestamp
     subscriptions: Mapping<(Address, u32), u64>,
+    /// Subscriber count per plan
+    plan_subscribers: Mapping<u32, u32>,
     /// Total plans count
     plan_count: Var<u32>,
     /// Total revenue collected
@@ -29,23 +35,34 @@ impl SubscriptionManager {
         self.total_revenue.set(U512::zero());
     }
 
-    /// Create a new subscription plan (merchant only)
+    /// Create a new subscription plan
+    /// Returns the new plan ID
     pub fn create_plan(&mut self, price: U512, period_seconds: u64, name: String) -> u32 {
+        let merchant = self.env().caller();
         let plan_id = self.plan_count.get_or_default() + 1;
+        
         self.plan_prices.set(&plan_id, price);
         self.plan_periods.set(&plan_id, period_seconds);
         self.plan_names.set(&plan_id, name);
+        self.plan_merchants.set(&plan_id, merchant);
+        self.plan_subscribers.set(&plan_id, 0);
         self.plan_count.set(plan_id);
+        
         plan_id
     }
 
-    /// Subscribe to a plan
+    /// Subscribe to a plan - PAYABLE
+    /// User must send the plan price in CSPR
+    #[odra(payable)]
     pub fn subscribe(&mut self, plan_id: u32) {
         let subscriber = self.env().caller();
         let attached_value = self.env().attached_value();
         
         let price = self.plan_prices.get(&plan_id).unwrap_or_default();
         let period = self.plan_periods.get(&plan_id).unwrap_or_default();
+        
+        // Validate plan exists
+        assert!(price > U512::zero(), "Plan does not exist");
         
         // Check payment amount
         assert!(attached_value >= price, "Insufficient payment");
@@ -54,17 +71,29 @@ impl SubscriptionManager {
         let current_time = self.env().get_block_time();
         let existing_expiry = self.subscriptions.get(&(subscriber, plan_id)).unwrap_or(0);
         let new_expiry = if existing_expiry > current_time {
+            // Extend existing subscription
             existing_expiry + period
         } else {
+            // New subscription
             current_time + period
         };
         
         // Save subscription
         self.subscriptions.set(&(subscriber, plan_id), new_expiry);
         
-        // Update revenue
+        // Update subscriber count (only for new subscriptions)
+        if existing_expiry == 0 {
+            let current_subs = self.plan_subscribers.get(&plan_id).unwrap_or(0);
+            self.plan_subscribers.set(&plan_id, current_subs + 1);
+        }
+        
+        // Update total revenue
         let current_revenue = self.total_revenue.get_or_default();
         self.total_revenue.set(current_revenue + price);
+        
+        // Transfer payment to merchant
+        let merchant = self.plan_merchants.get(&plan_id).unwrap();
+        self.env().transfer_tokens(&merchant, &price);
     }
 
     /// Check if a subscription is active
@@ -79,14 +108,25 @@ impl SubscriptionManager {
         self.subscriptions.get(&(subscriber, plan_id)).unwrap_or(0)
     }
 
-    /// Get plan price
+    /// Get plan details
     pub fn get_plan_price(&self, plan_id: u32) -> U512 {
         self.plan_prices.get(&plan_id).unwrap_or_default()
     }
 
-    /// Get plan period
     pub fn get_plan_period(&self, plan_id: u32) -> u64 {
         self.plan_periods.get(&plan_id).unwrap_or_default()
+    }
+
+    pub fn get_plan_name(&self, plan_id: u32) -> String {
+        self.plan_names.get(&plan_id).unwrap_or_default()
+    }
+
+    pub fn get_plan_merchant(&self, plan_id: u32) -> Option<Address> {
+        self.plan_merchants.get(&plan_id)
+    }
+
+    pub fn get_plan_subscribers(&self, plan_id: u32) -> u32 {
+        self.plan_subscribers.get(&plan_id).unwrap_or(0)
     }
 
     /// Get total number of plans
