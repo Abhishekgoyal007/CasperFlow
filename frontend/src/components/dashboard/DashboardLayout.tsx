@@ -23,7 +23,7 @@ const merchantNavItems = [
     { name: "Overview", href: "/app/merchant", icon: LayoutDashboard },
     { name: "Plans", href: "/app/merchant/plans", icon: CreditCard },
     { name: "Subscribers", href: "/app/merchant/subscribers", icon: Users },
-    { name: "Usage & Billing", href: "/app/merchant/billing", icon: BarChart3 },
+    { name: "Usage & Billing", href: "/app/merchant/usage", icon: BarChart3 },
     { name: "Invoices", href: "/app/merchant/invoices", icon: FileText },
     { name: "Settings", href: "/app/merchant/settings", icon: Settings },
 ];
