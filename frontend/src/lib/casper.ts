@@ -302,7 +302,9 @@ export async function transferCSPR(
 
     const sender = CLPublicKey.fromHex(senderPublicKey);
     const recipient = CLPublicKey.fromHex(recipientPublicKey);
-    const amountMotes = csprToMotes(amountInCSPR);
+
+    // Convert to motes - use number (not BigInt) for SDK compatibility
+    const amountMotes = Math.floor(amountInCSPR * CSPR_TO_MOTES);
 
     // Build a simple transfer deploy
     const deploy = DeployUtil.makeDeploy(
@@ -313,7 +315,7 @@ export async function transferCSPR(
             1800000
         ),
         DeployUtil.ExecutableDeployItem.newTransfer(
-            amountMotes,
+            amountMotes, // Use number directly
             recipient,
             null, // no correlation id needed
             1 // transfer id
