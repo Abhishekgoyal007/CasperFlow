@@ -16,37 +16,38 @@ const features = [
     {
         icon: CreditCard,
         title: "Recurring Subscriptions",
-        description: "Create monthly, weekly, or custom billing cycles. Auto-charge subscribers on-chain with full transparency.",
+        description: "Create monthly, weekly, or custom billing cycles. Subscribe with CSPR on-chain with full transparency.",
         color: "#ff3e3e",
     },
     {
         icon: BarChart3,
         title: "Usage-Based Metering",
-        description: "Track API calls, storage, compute units, or any custom metric. Bill users exactly for what they use.",
+        description: "Track API calls and monitor usage patterns. Visual analytics dashboard for subscribers and merchants.",
         color: "#8b5cf6",
     },
     {
         icon: Coins,
         title: "Stake-to-Pay",
-        description: "Users pay subscriptions from staking rewards. Keep tokens staked, never sell — still access premium services.",
+        description: "Stake CSPR and auto-pay subscriptions from staking rewards. Keep tokens staked, never sell — still access services.",
         color: "#10b981",
     },
     {
         icon: Globe,
         title: "Cross-Chain Payments",
-        description: "Accept payments from Ethereum, Polygon, and more. All settled on Casper for unified billing.",
+        description: "Coming Soon: Accept payments from Ethereum, Polygon, and more. All settled on Casper for unified billing.",
         color: "#3b82f6",
+        comingSoon: true,
     },
     {
         icon: Code2,
-        title: "Developer SDK",
-        description: "TypeScript/JavaScript SDK with simple APIs. Integrate billing in minutes, not weeks.",
+        title: "Developer API",
+        description: "REST API for subscription verification. Integrate billing in minutes with simple API calls.",
         color: "#f59e0b",
     },
     {
         icon: Shield,
-        title: "On-Chain Invoices",
-        description: "Every bill, payment, and usage record stored on-chain. Full auditability and trust.",
+        title: "Downloadable Invoices",
+        description: "Generate and download invoices for every transaction. Full billing history and audit trail.",
         color: "#06b6d4",
     },
 ];
@@ -97,16 +98,23 @@ export function FeaturesSection() {
                         >
                             {/* Icon */}
                             <div
-                                className="w-14 h-14 rounded-xl flex items-center justify-center mb-6"
+                                className="w-14 h-14 rounded-xl flex items-center justify-center mb-6 relative"
                                 style={{ backgroundColor: `${feature.color}20` }}
                             >
                                 <feature.icon className="w-7 h-7" style={{ color: feature.color }} />
                             </div>
 
                             {/* Content */}
-                            <h3 className="text-xl font-semibold mb-4 text-white">
-                                {feature.title}
-                            </h3>
+                            <div className="flex items-center gap-2 mb-4">
+                                <h3 className="text-xl font-semibold text-white">
+                                    {feature.title}
+                                </h3>
+                                {'comingSoon' in feature && feature.comingSoon && (
+                                    <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full">
+                                        Soon
+                                    </span>
+                                )}
+                            </div>
                             <p className="text-gray-400 leading-relaxed">
                                 {feature.description}
                             </p>
@@ -130,9 +138,9 @@ export function FeaturesSection() {
                 >
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
                         {[
-                            { icon: LineChart, value: "Unlimited", label: "Usage Metrics" },
+                            { icon: LineChart, value: "Real-time", label: "Usage Tracking" },
                             { icon: CreditCard, value: "∞", label: "Subscription Plans" },
-                            { icon: Globe, value: "5+", label: "Chains Supported" },
+                            { icon: Globe, value: "Testnet", label: "Casper Network" },
                             { icon: Code2, value: "< 10", label: "Lines to Integrate" },
                         ].map((stat, index) => (
                             <div key={index} className="flex flex-col items-center">
