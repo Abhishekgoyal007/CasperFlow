@@ -10,7 +10,7 @@ const navItems = [
     { name: "Features", href: "#features" },
     { name: "How It Works", href: "#how-it-works" },
     { name: "Use Cases", href: "#use-cases" },
-    { name: "Docs", href: "#docs" },
+    { name: "Docs", href: "/docs" },
 ];
 
 export function Navbar() {
