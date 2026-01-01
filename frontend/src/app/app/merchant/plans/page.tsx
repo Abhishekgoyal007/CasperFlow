@@ -46,7 +46,15 @@ export default function MerchantPlansPage() {
             price: parseFloat(formData.price),
             period: formData.period,
             createdBy: address,
-            merchantPublicKey: publicKey || undefined // Save full public key for transfers
+            merchantPublicKey: publicKey || undefined,
+            // Default trial settings (can be enhanced with form fields later)
+            trialEnabled: false,
+            trialDays: 0,
+            autoRenewDefault: true,
+            maxRenewals: 0,
+            features: ['Full API access', 'Email support'],
+            tier: 'starter',
+            apiCallsPerMonth: 10000,
         });
 
         resetForm();

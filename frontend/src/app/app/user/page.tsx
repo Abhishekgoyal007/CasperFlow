@@ -18,7 +18,7 @@ import {
 import Link from "next/link";
 
 export default function UserDashboard() {
-    const { isConnected, address, balance, network, publicKey } = useWallet();
+    const { isConnected, isDemo, address, balance, network, publicKey } = useWallet();
     const { getSubscriptionsForUser } = useSubscriptions();
 
     // Get real subscriptions
@@ -76,6 +76,31 @@ export default function UserDashboard() {
                         </div>
                     </div>
                 </div>
+
+                {/* Demo Mode Warning */}
+                {isDemo && (
+                    <div className="bg-orange-500/10 border border-orange-500/30 rounded-xl p-4">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center flex-shrink-0">
+                                <Wallet className="w-5 h-5 text-orange-400" />
+                            </div>
+                            <div className="flex-1">
+                                <div className="text-sm text-orange-400 font-semibold">Demo Mode Active</div>
+                                <div className="text-xs text-gray-400">
+                                    No Casper Wallet extension detected. Using simulated wallet with mock balance.
+                                    <a
+                                        href="https://chrome.google.com/webstore/detail/casper-wallet/abkahkcbhngaebpcgfmhkoioedceoigp"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-orange-400 hover:text-orange-300 ml-1"
+                                    >
+                                        Install Casper Wallet →
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Wallet Status Banner */}
                 {isConnected && (

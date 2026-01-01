@@ -90,14 +90,16 @@ export default function UserBrowsePage() {
             }
 
             // Subscribe the user and get the new subscription with API key
-            const sub = subscribe(
-                plan.id,
-                plan.name,
-                plan.price,
-                plan.period,
-                plan.createdBy,
-                address
-            );
+            const sub = subscribe({
+                planId: plan.id,
+                planName: plan.name,
+                planPrice: plan.price,
+                planPeriod: plan.period,
+                merchantWallet: plan.createdBy,
+                subscriberWallet: address,
+                autoRenewEnabled: false,
+                maxSpendApproved: 0
+            });
 
             // Register API key with verification endpoint
             try {

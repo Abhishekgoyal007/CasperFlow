@@ -6,6 +6,7 @@ interface WalletContextType {
     // Connection state
     isConnected: boolean;
     isConnecting: boolean;
+    isDemo: boolean; // True if using demo mode, not real wallet
     address: string | null;
     publicKey: string | null;
     balance: string;
@@ -67,6 +68,7 @@ function getLegacySigner(): LegacySignerType | null {
 export function WalletProvider({ children }: WalletProviderProps) {
     const [isConnected, setIsConnected] = useState(false);
     const [isConnecting, setIsConnecting] = useState(false);
+    const [isDemo, setIsDemo] = useState(false);
     const [address, setAddress] = useState<string | null>(null);
     const [publicKey, setPublicKey] = useState<string | null>(null);
     const [balance, setBalance] = useState("0");
@@ -140,6 +142,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
                 setPublicKey(mockPublicKey);
                 setBalance("2,450");
                 setIsConnected(true);
+                setIsDemo(true);
 
                 localStorage.setItem("casperflow_connected", "demo");
                 localStorage.setItem("casperflow_address", mockAddress);
@@ -211,6 +214,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
             setPublicKey(mockPublicKey);
             setBalance("2,450");
             setIsConnected(true);
+            setIsDemo(true);
 
             localStorage.setItem("casperflow_connected", "demo");
             localStorage.setItem("casperflow_address", mockAddress);
@@ -253,6 +257,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
                 setIsConnected(true);
                 setAddress(displayAddress);
                 setPublicKey(savedPublicKey);
+                setIsDemo(wasConnected === "demo");
 
                 // Fetch real balance if we have public key
                 if (savedPublicKey && wasConnected !== "demo") {
@@ -275,6 +280,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
     const value: WalletContextType = {
         isConnected,
         isConnecting,
+        isDemo,
         address,
         publicKey,
         balance,

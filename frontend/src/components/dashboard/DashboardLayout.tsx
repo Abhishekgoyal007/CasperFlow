@@ -18,7 +18,11 @@ import {
     Trash2,
     Coins,
     Package,
-    Globe
+    Globe,
+    Code,
+    TrendingUp,
+    Shield,
+    Gift
 } from "lucide-react";
 import { ConnectWalletButton } from "@/components/wallet";
 import { useNotifications } from "@/context/NotificationsContext";
@@ -26,8 +30,10 @@ import { useWallet } from "@/context/WalletContext";
 
 const merchantNavItems = [
     { name: "Overview", href: "/app/merchant", icon: LayoutDashboard },
+    { name: "Analytics", href: "/app/merchant/analytics", icon: TrendingUp, badge: "New" },
     { name: "Plans", href: "/app/merchant/plans", icon: CreditCard },
     { name: "Subscribers", href: "/app/merchant/subscribers", icon: Users },
+    { name: "Widget Builder", href: "/app/merchant/widget", icon: Code, badge: "New" },
     { name: "Usage & Billing", href: "/app/merchant/usage", icon: BarChart3 },
     { name: "Invoices", href: "/app/merchant/invoices", icon: FileText },
     { name: "Settings", href: "/app/merchant/settings", icon: Settings },
@@ -36,8 +42,10 @@ const merchantNavItems = [
 const userNavItems = [
     { name: "Overview", href: "/app/user", icon: LayoutDashboard },
     { name: "Browse Plans", href: "/app/user/browse", icon: Package },
+    { name: "Free Trials", href: "/app/user/trials", icon: Gift, badge: "New" },
     { name: "My Subscriptions", href: "/app/user/subscriptions", icon: CreditCard },
     { name: "Stake-to-Pay", href: "/app/user/stake", icon: Coins },
+    { name: "Payment Consents", href: "/app/user/consents", icon: Shield },
     { name: "Cross-Chain", href: "/app/user/cross-chain", icon: Globe, badge: "Soon" },
     { name: "Usage", href: "/app/user/usage", icon: BarChart3 },
     { name: "Invoices", href: "/app/user/invoices", icon: FileText },
