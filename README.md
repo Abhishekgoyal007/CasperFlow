@@ -12,20 +12,6 @@
 
 </div>
 
----
-
-## 🏆 What Makes CasperFlow Win?
-
-| Feature | Description | Status |
-|---------|-------------|--------|
-| **💎 Stake-to-Pay™** | Pay subscriptions from staking rewards without touching principal | ✅ Implemented |
-| **🔄 Automated Recurring Payments** | Consent-based auto-renewal with spending limits | ✅ Implemented |
-| **📊 Merchant Analytics Dashboard** | Real-time revenue charts, subscriber growth, churn prediction | ✅ Implemented |
-| **🎁 Free Trials** | Time-locked trial access without payment | ✅ Implemented |
-| **🔌 Embeddable Widget** | Drop-in subscription button for any website | ✅ Implemented |
-
----
-
 ## 💎 Stake-to-Pay™ — The Killer Feature
 
 > **Revolutionary:** Stake your CSPR, earn 8% APY, and automatically pay subscriptions from your staking rewards — without touching your principal!
