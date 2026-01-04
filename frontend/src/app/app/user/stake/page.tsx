@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { DashboardLayout } from "@/components/dashboard";
 import { useWallet } from "@/context/WalletContext";
 import { useSubscriptions } from "@/context/SubscriptionsContext";
+import { transferCSPR, isCasperWalletAvailable, getDeployExplorerUrl } from "@/lib/casper";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Coins,
@@ -24,7 +25,8 @@ import {
     Wallet,
     Target,
     PiggyBank,
-    BadgePercent
+    BadgePercent,
+    ExternalLink
 } from "lucide-react";
 import Link from "next/link";
 
@@ -32,6 +34,9 @@ import Link from "next/link";
 const STAKE_STORAGE_KEY = 'casperflow_stakes_v2';
 const APY_RATE = 0.08; // 8% APY
 const MIN_STAKE = 100; // Minimum 100 CSPR
+
+// StakeToPay Vault Address (Testnet) - Receives staked CSPR
+const STAKE_VAULT_PUBLIC_KEY = '0203b8620122e83f06e1f6b0ed37aa27c9fc2a51b5a3b179b829d73cd8a7e885c7b7';
 
 interface StakeData {
     wallet: string;
@@ -76,6 +81,9 @@ export default function StakeToPayPage() {
     const [stakeData, setStakeData] = useState<StakeData | null>(null);
     const [showSuccess, setShowSuccess] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'stake' | 'withdraw' | 'calculator'>('stake');
+    const [useOnChain, setUseOnChain] = useState(true);
+    const [lastTxHash, setLastTxHash] = useState<string | null>(null);
+    const [lastTxUrl, setLastTxUrl] = useState<string | null>(null);
 
     const mySubscriptions = getSubscriptionsForUser(address);
     const activeSubscriptions = mySubscriptions.filter(s => s.status === 'active');
@@ -131,29 +139,84 @@ export default function StakeToPayPage() {
         }
 
         setIsStaking(true);
+        setLastTxHash(null);
+        setLastTxUrl(null);
 
-        // Simulate transaction
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        let txHash: string | undefined;
+        let txUrl: string | undefined;
+        let usedOnChain = false;
 
-        const now = Date.now();
-        const newData: StakeData = {
-            wallet: address,
-            stakedAmount: (stakeData?.stakedAmount || 0) + amount,
-            stakedAt: stakeData?.stakedAt || now,
-            lastRewardClaim: stakeData?.lastRewardClaim || now,
-            autoPayEnabled: true,
-            autoRenewEnabled: true,
-            planIds: activeSubscriptions.map(s => s.planId),
-            totalRewardsClaimed: stakeData?.totalRewardsClaimed || 0,
-            totalSubscriptionsPaid: stakeData?.totalSubscriptionsPaid || 0
-        };
+        try {
+            // Try real on-chain transfer if enabled and wallet available
+            if (useOnChain && publicKey && isCasperWalletAvailable()) {
+                try {
+                    console.log('Initiating on-chain stake transfer:', {
+                        from: publicKey.slice(0, 16) + '...',
+                        to: STAKE_VAULT_PUBLIC_KEY.slice(0, 16) + '...',
+                        amount: amount
+                    });
 
-        saveStakeData(newData);
-        setStakeData(newData);
-        setStakeAmount("");
-        setShowSuccess(`✅ Successfully staked ${amount} CSPR! Now earning 8% APY.`);
-        setTimeout(() => setShowSuccess(null), 4000);
-        setIsStaking(false);
+                    const result = await transferCSPR(
+                        publicKey,
+                        STAKE_VAULT_PUBLIC_KEY,
+                        amount,
+                        network as 'testnet' | 'mainnet'
+                    );
+                    txHash = result.deployHash;
+                    txUrl = result.explorerUrl;
+                    usedOnChain = true;
+                    console.log('✅ Stake transaction submitted:', txHash);
+                } catch (walletErr: unknown) {
+                    const errMessage = walletErr instanceof Error ? walletErr.message : 'Unknown error';
+                    console.log('Wallet operation failed:', errMessage);
+                    if (errMessage.includes('cancelled') || errMessage.includes('rejected')) {
+                        setShowSuccess('Transaction cancelled by user');
+                        setTimeout(() => setShowSuccess(null), 3000);
+                        setIsStaking(false);
+                        return;
+                    }
+                    // Continue with demo mode
+                }
+            }
+
+            // If not on-chain, simulate
+            if (!usedOnChain) {
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                txHash = `demo-stake-${Date.now().toString(16)}`;
+            }
+
+            const now = Date.now();
+            const newData: StakeData = {
+                wallet: address,
+                stakedAmount: (stakeData?.stakedAmount || 0) + amount,
+                stakedAt: stakeData?.stakedAt || now,
+                lastRewardClaim: stakeData?.lastRewardClaim || now,
+                autoPayEnabled: true,
+                autoRenewEnabled: true,
+                planIds: activeSubscriptions.map(s => s.planId),
+                totalRewardsClaimed: stakeData?.totalRewardsClaimed || 0,
+                totalSubscriptionsPaid: stakeData?.totalSubscriptionsPaid || 0
+            };
+
+            saveStakeData(newData);
+            setStakeData(newData);
+            setStakeAmount("");
+            setLastTxHash(txHash || null);
+            setLastTxUrl(txUrl || null);
+
+            if (usedOnChain) {
+                setShowSuccess(`✅ Staked ${amount} CSPR on-chain! View on explorer.`);
+            } else {
+                setShowSuccess(`✅ Successfully staked ${amount} CSPR! Now earning 8% APY.`);
+            }
+            setTimeout(() => setShowSuccess(null), 5000);
+        } catch (error) {
+            console.error('Stake error:', error);
+            setShowSuccess('Failed to stake. Please try again.');
+            setTimeout(() => setShowSuccess(null), 3000);
+        } finally {
+            setIsStaking(false);
+        }
     };
 
     const handleWithdraw = async () => {
@@ -232,15 +295,32 @@ export default function StakeToPayPage() {
                     <div className="absolute bottom-0 left-0 w-48 h-48 bg-orange-400/10 rounded-full blur-3xl" />
 
                     <div className="relative z-10">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center shadow-lg shadow-yellow-500/30">
-                                <Coins className="w-7 h-7 text-white" />
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center shadow-lg shadow-yellow-500/30">
+                                    <Coins className="w-7 h-7 text-white" />
+                                </div>
+                                <div>
+                                    <h1 className="text-3xl font-bold text-white">Stake-to-Pay</h1>
+                                    <p className="text-yellow-200/70">
+                                        Earn 8% APY • Auto-pay subscriptions • Keep your principal
+                                    </p>
+                                </div>
                             </div>
-                            <div>
-                                <h1 className="text-3xl font-bold text-white">Stake-to-Pay</h1>
-                                <p className="text-yellow-200/70">
-                                    Earn 8% APY • Auto-pay subscriptions • Keep your principal
-                                </p>
+                            {/* On-Chain Toggle */}
+                            <div className="flex items-center gap-3">
+                                <label className="flex items-center gap-2 cursor-pointer bg-white/5 rounded-xl px-4 py-2">
+                                    <input
+                                        type="checkbox"
+                                        checked={useOnChain}
+                                        onChange={(e) => setUseOnChain(e.target.checked)}
+                                        className="w-4 h-4 accent-yellow-500"
+                                    />
+                                    <span className="text-sm text-gray-300">On-Chain</span>
+                                </label>
+                                <span className={`text-xs px-2 py-1 rounded ${useOnChain ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
+                                    {useOnChain ? 'Real CSPR' : 'Demo'}
+                                </span>
                             </div>
                         </div>
 
@@ -280,10 +360,27 @@ export default function StakeToPayPage() {
                             exit={{ opacity: 0, y: -20 }}
                             className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-xl p-4"
                         >
-                            <div className="flex items-center gap-3">
-                                <CheckCircle className="w-5 h-5 text-green-400" />
-                                <span className="text-green-300">{showSuccess}</span>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <CheckCircle className="w-5 h-5 text-green-400" />
+                                    <span className="text-green-300">{showSuccess}</span>
+                                </div>
+                                {lastTxUrl && (
+                                    <a
+                                        href={lastTxUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-1 text-sm text-purple-400 hover:text-purple-300 font-medium"
+                                    >
+                                        View on Explorer <ExternalLink className="w-4 h-4" />
+                                    </a>
+                                )}
                             </div>
+                            {lastTxHash && (
+                                <div className="mt-2 text-xs text-gray-400 font-mono truncate">
+                                    Tx: {lastTxHash}
+                                </div>
+                            )}
                         </motion.div>
                     )}
                 </AnimatePresence>

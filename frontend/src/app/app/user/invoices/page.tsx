@@ -21,8 +21,8 @@ export default function UserInvoicesPage() {
     const mySubscriptions = getSubscriptionsForUser(address);
 
     // Transform subscriptions into invoices
-    const invoices = mySubscriptions.map(sub => ({
-        id: `INV-${sub.id.slice(4, 12).toUpperCase()}`,
+    const invoices = mySubscriptions.map((sub, index) => ({
+        id: `INV-${sub.id.slice(-10).toUpperCase()}-${index}`,
         subscriptionId: sub.id,
         merchant: sub.merchantWallet,
         planName: sub.planName,
@@ -219,8 +219,8 @@ export default function UserInvoicesPage() {
                                             </td>
                                             <td className="py-4 px-6">
                                                 <span className={`flex items-center gap-1 text-xs ${invoice.status === 'paid'
-                                                        ? 'text-green-400'
-                                                        : 'text-red-400'
+                                                    ? 'text-green-400'
+                                                    : 'text-red-400'
                                                     }`}>
                                                     {invoice.status === 'paid'
                                                         ? <CheckCircle className="w-3 h-3" />

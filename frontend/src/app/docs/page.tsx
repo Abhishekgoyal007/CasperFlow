@@ -366,8 +366,8 @@ export default function DocsPage() {
                                             key={lang}
                                             onClick={() => setSelectedLang(lang)}
                                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${selectedLang === lang
-                                                    ? 'bg-purple-500 text-white'
-                                                    : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                                                ? 'bg-purple-500 text-white'
+                                                : 'bg-white/5 text-gray-400 hover:bg-white/10'
                                                 }`}
                                         >
                                             {lang === 'aiAgent' ? 'AI Agent' : lang.charAt(0).toUpperCase() + lang.slice(1)}
@@ -572,7 +572,7 @@ export default function DocsPage() {
             {/* Footer */}
             <footer className="border-t border-white/10 mt-16 py-8">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-500 text-sm">
-                    <p>CasperFlow © 2024. Built on Casper Network.</p>
+                    <p>CasperFlow © 2026. Built on Casper Network.</p>
                 </div>
             </footer>
         </main>

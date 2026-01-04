@@ -5,8 +5,6 @@ Build a **real, working** on-chain subscription billing protocol on Casper that:
 1. Actually transfers CSPR when users subscribe
 2. Stores all data on-chain
 3. Provides API for developers to verify subscriptions
-4. Has at least ONE unique "wow" feature
-
 ---
 
 ## 📊 Current State vs Target State
@@ -28,11 +26,11 @@ Build a **real, working** on-chain subscription billing protocol on Casper that:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     CASPERFLOW ARCHITECTURE                  │
+│                     CASPERFLOW ARCHITECTURE                 │
 ├─────────────────────────────────────────────────────────────┤
-│                                                              │
+│                                                             │
 │   ┌──────────────┐     ┌──────────────┐     ┌─────────────┐ │
-│   │   FRONTEND   │────▶│   NEXT.js    │────▶│  CASPER     │ │
+│   │   FRONTEND   │────▶│   NEXT.js    │────▶│  CASPER    │ │
 │   │   (React)    │     │   API Routes │     │  TESTNET    │ │
 │   └──────────────┘     └──────────────┘     └─────────────┘ │
 │          │                    │                    │        │
@@ -41,7 +39,7 @@ Build a **real, working** on-chain subscription billing protocol on Casper that:
 │   │   CASPER     │     │  Verify API  │     │  SMART      │ │
 │   │   WALLET     │     │  /api/verify │     │  CONTRACTS  │ │
 │   └──────────────┘     └──────────────┘     └─────────────┘ │
-│                                                              │
+│                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -190,13 +188,13 @@ POST /api/subscribe
 
 Before submission, these MUST work:
 
-1. [ ] User can subscribe with REAL CSPR transfer
-2. [ ] Transaction visible on testnet.cspr.live
-3. [ ] API can verify subscription status
-4. [ ] Merchant sees real subscriber data
-5. [ ] At least basic Stake-to-Pay demo
+1. [x] User can subscribe with REAL CSPR transfer
+2. [x] Transaction visible on testnet.cspr.live
+3. [x] API can verify subscription status
+4. [x] Merchant sees real subscriber data
+5. [x] At least basic Stake-to-Pay demo
 6. [ ] Demo video showing complete flow
-7. [ ] README matches reality
+7. [x] README matches reality
 
 ---
 

@@ -16,13 +16,13 @@
 
 > **Revolutionary:** Stake your CSPR, earn 8% APY, and automatically pay subscriptions from your staking rewards — without touching your principal!
 
-| Traditional Payments | Stake-to-Pay™ |
-|---------------------|---------------|
-| ❌ Sell crypto to pay | ✅ Keep 100% of your tokens |
-| ❌ Lose potential gains | ✅ Earn 8% APY while paying |
-| ❌ Tax events on each sale | ✅ No selling = no tax events |
-| ❌ Manual payment each month | ✅ Auto-pay from rewards |
-| ❌ Principal decreases | ✅ Principal untouched |
+|   Traditional Payments        |        Stake-to-Pay™         |
+|-------------------------------|------------------------------|
+| ❌ Sell crypto to pay        | ✅ Keep 100% of your tokens  |
+| ❌ Lose potential gains      | ✅ Earn 8% APY while paying  |
+| ❌ Tax events on each sale   | ✅ No selling = no tax events|
+| ❌ Manual payment each month | ✅ Auto-pay from rewards     |
+| ❌ Principal decreases       | ✅ Principal untouched       |
 
 **Example:** Stake 1,000 CSPR → Earn ~80 CSPR/year in rewards → Auto-pay up to 6.67 CSPR/month in subscriptions!
 
@@ -110,10 +110,10 @@ import { CasperFlowButton } from 'casperflow-widget';
 
 ## 📜 Deployed Contracts
 
-| Contract | Network | Deploy Hash | Status |
+| Contract | Network | Hash/Address | Status |
 |----------|---------|-------------|--------|
 | SubscriptionManager | Testnet | `55fb7395...` | ✅ Verified |
-| StakeToPay | Testnet | Ready to deploy | 🔄 Ready |
+| StakeToPay Vault | Testnet | `0203b862...` | ✅ Integrated |
 
 View on explorer: [testnet.cspr.live](https://testnet.cspr.live/deploy/55fb73955a3e736cd516af0956057a2c55f986d1b3a421b403294a2c288d2143)
 
@@ -127,6 +127,8 @@ View on explorer: [testnet.cspr.live](https://testnet.cspr.live/deploy/55fb73955
 - ✅ Keep principal untouched
 - ✅ No lock-up period
 - ✅ Coverage calculator
+- ✅ **Real on-chain CSPR transfers via Casper Wallet**
+- ✅ **View transactions on testnet.cspr.live**
 
 ### 🔄 Recurring Payments
 - ✅ Consent-based authorization

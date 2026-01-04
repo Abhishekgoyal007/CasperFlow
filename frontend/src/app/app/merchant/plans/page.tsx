@@ -36,9 +36,12 @@ export default function MerchantPlansPage() {
         setFormData({ name: "", description: "", price: "", period: "monthly" });
     };
 
+
     const handleCreatePlan = (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.name || !formData.price || !address) return;
+
+        console.log('Creating plan with merchantPublicKey:', publicKey);
 
         addPlan({
             name: formData.name,

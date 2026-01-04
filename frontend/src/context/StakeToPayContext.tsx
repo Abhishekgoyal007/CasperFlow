@@ -2,11 +2,16 @@
 
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
 import { useWallet } from "./WalletContext";
+import { transferCSPR, isCasperWalletAvailable, getDeployExplorerUrl } from "@/lib/casper";
 
 // Constants
 const STAKE_STORAGE_KEY = 'casperflow_stakes_v2';
 const APY_RATE = 0.08; // 8% APY (competitive rate)
 const MIN_STAKE_AMOUNT = 100; // Minimum 100 CSPR
+
+// StakeToPay Vault Address (Testnet) - Receives staked CSPR
+// In production, this would be the StakeToPay contract hash
+const STAKE_VAULT_PUBLIC_KEY = '0203b8620122e83f06e1f6b0ed37aa27c9fc2a51b5a3b179b829d73cd8a7e885c7b7';
 
 // Types
 export interface StakePosition {
@@ -42,7 +47,7 @@ export interface StakeToPayContextType {
     savingsVsTraditional: number;
 
     // Actions
-    stake: (amount: number) => Promise<{ success: boolean; txHash?: string; error?: string }>;
+    stake: (amount: number) => Promise<{ success: boolean; txHash?: string; error?: string; explorerUrl?: string }>;
     withdraw: (amount: number) => Promise<{ success: boolean; txHash?: string; error?: string }>;
     claimRewards: () => Promise<{ success: boolean; amount?: number; error?: string }>;
     enableAutoPay: (planIds: string[]) => void;
@@ -148,20 +153,55 @@ export function StakeToPayProvider({ children, monthlySubscriptionCost = 0 }: St
         : 0;
 
     // Stake CSPR
-    const stake = useCallback(async (amount: number): Promise<{ success: boolean; txHash?: string; error?: string }> => {
+    const stake = useCallback(async (amount: number): Promise<{ success: boolean; txHash?: string; error?: string; explorerUrl?: string }> => {
         if (!address || amount < MIN_STAKE_AMOUNT) {
             return { success: false, error: `Minimum stake is ${MIN_STAKE_AMOUNT} CSPR` };
         }
 
         setIsLoading(true);
+        let txHash: string | undefined;
+        let explorerUrl: string | undefined;
+        let usedOnChain = false;
 
         try {
-            // Simulate blockchain transaction
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Try real on-chain transfer if wallet is available
+            if (publicKey && isCasperWalletAvailable()) {
+                try {
+                    console.log('Initiating on-chain stake transfer:', {
+                        from: publicKey.slice(0, 16) + '...',
+                        to: STAKE_VAULT_PUBLIC_KEY.slice(0, 16) + '...',
+                        amount: amount
+                    });
 
-            // Generate mock transaction hash
-            const txHash = `deploy-${Date.now().toString(16)}${Math.random().toString(16).slice(2, 10)}`;
+                    const result = await transferCSPR(
+                        publicKey,
+                        STAKE_VAULT_PUBLIC_KEY,
+                        amount,
+                        'testnet'
+                    );
+                    txHash = result.deployHash;
+                    explorerUrl = result.explorerUrl;
+                    usedOnChain = true;
+                    console.log('✅ Stake transaction submitted:', txHash);
+                } catch (walletErr: unknown) {
+                    const errMessage = walletErr instanceof Error ? walletErr.message : 'Unknown error';
+                    console.log('Wallet error (falling back to demo mode):', errMessage);
+                    // If user cancelled, inform them but don't fail
+                    if (errMessage.includes('cancelled') || errMessage.includes('rejected')) {
+                        setIsLoading(false);
+                        return { success: false, error: 'Transaction cancelled by user' };
+                    }
+                    // Otherwise continue with demo mode
+                }
+            }
 
+            // If not on-chain, simulate the transaction
+            if (!usedOnChain) {
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                txHash = `demo-stake-${Date.now().toString(16)}${Math.random().toString(16).slice(2, 10)}`;
+            }
+
+            // Update local stake position
             const newPosition: StakePosition = {
                 wallet: address,
                 stakedAmount: (stakePosition?.stakedAmount || 0) + amount,
@@ -178,13 +218,14 @@ export function StakeToPayProvider({ children, monthlySubscriptionCost = 0 }: St
             saveStakePosition(newPosition);
             setStakePosition(newPosition);
 
-            return { success: true, txHash };
+            return { success: true, txHash, explorerUrl };
         } catch (error) {
-            return { success: false, error: 'Failed to stake CSPR' };
+            const errMessage = error instanceof Error ? error.message : 'Failed to stake CSPR';
+            return { success: false, error: errMessage };
         } finally {
             setIsLoading(false);
         }
-    }, [address, stakePosition]);
+    }, [address, publicKey, stakePosition]);
 
     // Withdraw CSPR
     const withdraw = useCallback(async (amount: number): Promise<{ success: boolean; txHash?: string; error?: string }> => {

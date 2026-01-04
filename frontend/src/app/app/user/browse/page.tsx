@@ -273,6 +273,11 @@ export default function UserBrowsePage() {
                                     <div className="flex items-center gap-2 text-sm text-gray-400 mb-4">
                                         <Users className="w-4 h-4" />
                                         {plan.subscribers} subscribers
+                                        {plan.merchantPublicKey && plan.merchantPublicKey.length >= 64 ? (
+                                            <span className="ml-auto text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded">On-Chain</span>
+                                        ) : (
+                                            <span className="ml-auto text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded">Demo</span>
+                                        )}
                                     </div>
 
                                     {alreadySubscribed && existingSub ? (

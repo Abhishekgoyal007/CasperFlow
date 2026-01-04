@@ -41,9 +41,7 @@ export function Navbar() {
                         {/* Logo */}
                         <Link href="/" className="flex items-center gap-3 group">
                             <div className="relative">
-                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-purple-500 flex items-center justify-center">
-                                    <Zap className="w-5 h-5 text-white" />
-                                </div>
+                                <img src="/logo.png" alt="CasperFlow" className="w-10 h-10 rounded-xl relative z-10" />
                                 <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-red-500 to-purple-500 blur-lg opacity-50 group-hover:opacity-80 transition-opacity" />
                             </div>
                             <span className="text-xl font-bold text-white">

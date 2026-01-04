@@ -28,12 +28,13 @@ import { ConnectWalletButton } from "@/components/wallet";
 import { useNotifications } from "@/context/NotificationsContext";
 import { useWallet } from "@/context/WalletContext";
 
+
 const merchantNavItems = [
     { name: "Overview", href: "/app/merchant", icon: LayoutDashboard },
-    { name: "Analytics", href: "/app/merchant/analytics", icon: TrendingUp, badge: "New" },
+    { name: "Analytics", href: "/app/merchant/analytics", icon: TrendingUp },
     { name: "Plans", href: "/app/merchant/plans", icon: CreditCard },
     { name: "Subscribers", href: "/app/merchant/subscribers", icon: Users },
-    { name: "Widget Builder", href: "/app/merchant/widget", icon: Code, badge: "New" },
+    { name: "Widget Builder", href: "/app/merchant/widget", icon: Code },
     { name: "Usage & Billing", href: "/app/merchant/usage", icon: BarChart3 },
     { name: "Invoices", href: "/app/merchant/invoices", icon: FileText },
     { name: "Settings", href: "/app/merchant/settings", icon: Settings },
@@ -42,15 +43,16 @@ const merchantNavItems = [
 const userNavItems = [
     { name: "Overview", href: "/app/user", icon: LayoutDashboard },
     { name: "Browse Plans", href: "/app/user/browse", icon: Package },
-    { name: "Free Trials", href: "/app/user/trials", icon: Gift, badge: "New" },
+    { name: "Free Trials", href: "/app/user/trials", icon: Gift },
     { name: "My Subscriptions", href: "/app/user/subscriptions", icon: CreditCard },
     { name: "Stake-to-Pay", href: "/app/user/stake", icon: Coins },
     { name: "Payment Consents", href: "/app/user/consents", icon: Shield },
-    { name: "Cross-Chain", href: "/app/user/cross-chain", icon: Globe, badge: "Soon" },
+    { name: "Cross-Chain", href: "/app/user/cross-chain", icon: Globe },
     { name: "Usage", href: "/app/user/usage", icon: BarChart3 },
     { name: "Invoices", href: "/app/user/invoices", icon: FileText },
     { name: "Settings", href: "/app/user/settings", icon: Settings },
 ];
+
 
 interface DashboardLayoutProps {
     children: React.ReactNode;
@@ -109,9 +111,7 @@ export function DashboardLayout({ children, type }: DashboardLayoutProps) {
                 {/* Logo */}
                 <div className="h-20 flex items-center justify-between px-6 border-b border-white/10">
                     <Link href="/" className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-purple-500 flex items-center justify-center">
-                            <Zap className="w-5 h-5 text-white" />
-                        </div>
+                        <img src="/logo.png" alt="CasperFlow" className="w-10 h-10 rounded-xl" />
                         <span className="text-xl font-bold text-white">
                             Casper<span className="text-red-500">Flow</span>
                         </span>

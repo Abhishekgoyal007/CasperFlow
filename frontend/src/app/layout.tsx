@@ -42,6 +42,10 @@ export const metadata: Metadata = {
     description:
       "The first protocol enabling usage-based billing, stake-powered payments, and cross-chain settlement on the Casper blockchain.",
   },
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({

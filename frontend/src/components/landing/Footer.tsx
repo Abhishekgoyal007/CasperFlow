@@ -85,9 +85,7 @@ export function Footer() {
                     {/* Brand */}
                     <div className="lg:col-span-2">
                         <Link href="/" className="flex items-center gap-3 mb-6">
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-purple-500 flex items-center justify-center">
-                                <Zap className="w-5 h-5 text-white" />
-                            </div>
+                            <img src="/logo.png" alt="CasperFlow" className="w-10 h-10 rounded-xl" />
                             <span className="text-xl font-bold text-white">
                                 Casper<span className="bg-gradient-to-r from-red-500 to-red-400 bg-clip-text text-transparent">Flow</span>
                             </span>
@@ -135,7 +133,7 @@ export function Footer() {
                 {/* Bottom */}
                 <div className="pt-10 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-6">
                     <div className="text-gray-500">
-                        © 2025 CasperFlow. Built for Casper Hackathon 2026.
+                        © 2026 CasperFlow. Built for Casper Hackathon 2026.
                     </div>
                     <div className="flex items-center gap-8 text-gray-500">
                         <Link href="#" className="hover:text-white transition-colors">Privacy</Link>

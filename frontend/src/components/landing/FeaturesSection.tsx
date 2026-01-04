@@ -42,9 +42,8 @@ const features = [
     {
         icon: Globe,
         title: "Cross-Chain Payments",
-        description: "Coming Soon: Accept payments from Ethereum, Polygon, and more. All settled on Casper for unified billing.",
+        description: "Accept payments from Ethereum, Polygon, and more. All settled on Casper for unified billing.",
         color: "#3b82f6",
-        comingSoon: true,
     },
     {
         icon: Code2,
@@ -103,8 +102,8 @@ export function FeaturesSection() {
                             viewport={{ once: true }}
                             transition={{ duration: 0.5, delay: index * 0.1 }}
                             className={`group bg-[#12121a] border rounded-2xl p-8 hover:bg-[#1a1a24] transition-all duration-300 ${feature.highlight
-                                    ? 'border-yellow-500/30 hover:border-yellow-500/50 ring-1 ring-yellow-500/20'
-                                    : 'border-white/10 hover:border-white/20'
+                                ? 'border-yellow-500/30 hover:border-yellow-500/50 ring-1 ring-yellow-500/20'
+                                : 'border-white/10 hover:border-white/20'
                                 }`}
                         >
                             {/* Icon */}
@@ -125,16 +124,7 @@ export function FeaturesSection() {
                                 <h3 className="text-xl font-semibold text-white">
                                     {feature.title}
                                 </h3>
-                                {'comingSoon' in feature && feature.comingSoon && (
-                                    <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full">
-                                        Soon
-                                    </span>
-                                )}
-                                {feature.highlight && (
-                                    <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded-full">
-                                        NEW
-                                    </span>
-                                )}
+
                             </div>
                             <p className="text-gray-400 leading-relaxed">
                                 {feature.description}
